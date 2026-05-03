@@ -749,7 +749,7 @@ body{max-width:480px;margin:0 auto;display:flex;flex-direction:column;overflow:h
         <div class="set-title">Finanzas</div>
         <div class="set-row"><div><div class="sr-lbl">Ingreso base</div><div class="sr-sub">Valor por defecto en pesos</div></div><input type="number" class="sr-in" id="cfgInc" placeholder="2200000"></div>
         <div class="set-row"><div><div class="sr-lbl">Meta de ahorro</div><div class="sr-sub">% del ingreso</div></div><input type="number" class="sr-in" id="cfgGoal" placeholder="60" min="1" max="99"></div>
-        <div class="set-row"><div><div class="sr-lbl">Cuotas fijas del mes</div><div class="sr-sub">Monto total comprometido</div></div><input type="number" class="sr-in" id="cfgCuotas" placeholder="439428"></div>
+        <div class="set-row"><div><div class="sr-lbl">Cuotas fijas del mes</div><div class="sr-sub">Monto total comprometido</div></div><input type="number" class="sr-in" id="cfgCuotas" placeholder="0"></div>
         <div class="set-row"><div><div class="sr-lbl">Gasto previo al registro</div><div class="sr-sub" id="previoSub">Gastos del mes antes de usar la app</div></div><input type="number" class="sr-in" id="cfgPrevio" placeholder="0"></div>
         <div class="set-row"><div><div class="sr-lbl">Moneda principal</div><div class="sr-sub">Para mostrar totales</div></div>
           <select class="sr-in" id="cfgCurrency" style="width:130px;text-align:left;font-family:var(--dm);font-size:13px;">
@@ -833,14 +833,14 @@ body{max-width:480px;margin:0 auto;display:flex;flex-direction:column;overflow:h
 // ═══ CONFIGURATION ═══
 const APP_CONFIG={
   user:{name:'Mateo'},
-  defaults:{income:2200000,savingsGoal:60,locale:'es-AR',currency:'ARS'},
+  defaults:{income:0,savingsGoal:60,locale:'es-AR',currency:'ARS'},
   thresholds:{spendDanger:0.40,spendWarn:0.25,budgetAlert:0.80},
   currencies:{
     ARS:{symbol:'$',locale:'es-AR',digits:0},
     USD:{symbol:'US$',locale:'en-US',digits:2}
   },
   categories:[
-    {name:'Cuotas tarjetas',emoji:'\u{1F4B3}',color:'#c07808',budget:439428,
+    {name:'Cuotas tarjetas',emoji:'\u{1F4B3}',color:'#c07808',budget:0,
      kw:['cuota','tarjeta','visa','mastercard','resumen']},
     {name:'Ropa / compras online',emoji:'\u{1F455}',color:'#c44040',budget:50000,
      kw:['ropa','zapatilla','remera','buzo','campera','adidas','puma','nike','umbro','jean','pantalon','calzado','indumentaria','meli','mercadolibre','dexter','tienda']},
@@ -1701,37 +1701,7 @@ g('fDesc').addEventListener('keydown',function(e){
   if(e.key==='Enter'){e.preventDefault();clearTimeout(_iTimer);doInterpret();}
 });
 
-// ═══ MIGRATION ═══
-(function(){
-  var k='txs:2026-04';
-  var txs=JSON.parse(localStorage.getItem(k)||'[]');
-  var seed=txs.find(function(t){return t.id==='seed-abril';});
-  if(seed){
-    if(!localStorage.getItem('cfg:previo:2026-04'))
-      localStorage.setItem('cfg:previo:2026-04',JSON.stringify(seed.monto));
-    localStorage.setItem(k,JSON.stringify(txs.filter(function(t){return t.id!=='seed-abril';})));
-  }
-})();
 
-// Cuotas preload
-(function(){
-  var existing=DS.getCuotas();if(existing.length>0)return;
-  var preload=[
-    {id:'visa-newsan12',nombre:'Newsan SA (12c)',tarjeta:'Visa Galicia',monto:65624.93,total:12,pagadas:4,inicio:'2025-12',cat:'Tecnolog\u00eda'},
-    {id:'visa-5190760tu',nombre:'MERPAGO*5190760TU',tarjeta:'Visa Galicia',monto:58333.33,total:6,pagadas:5,inicio:'2025-11',cat:'Otro'},
-    {id:'mc-newsan',nombre:'Newsan SA',tarjeta:'Mastercard Gold',monto:15936.33,total:6,pagadas:4,inicio:'2025-12',cat:'Tecnolog\u00eda'},
-    {id:'mc-tiendagranate',nombre:'Tienda Granate',tarjeta:'Mastercard Gold',monto:14331.66,total:6,pagadas:4,inicio:'2025-12',cat:'Ropa / compras online'},
-    {id:'mc-sevensport',nombre:'Seven Sport',tarjeta:'Mastercard Gold',monto:12135.00,total:6,pagadas:4,inicio:'2025-12',cat:'Entretenimiento'},
-    {id:'mc-lanus',nombre:'Club Atl\u00e9tico Lan\u00fas',tarjeta:'Mastercard Gold',monto:16633.33,total:3,pagadas:2,inicio:'2026-02',cat:'Entretenimiento'},
-    {id:'mc-umbro1',nombre:'Umbro (1ra compra)',tarjeta:'Mastercard Gold',monto:45441.79,total:3,pagadas:1,inicio:'2026-03',cat:'Ropa / compras online'},
-    {id:'mc-umbro2',nombre:'Umbro (2da compra)',tarjeta:'Mastercard Gold',monto:71383.80,total:3,pagadas:0,inicio:'2026-04',cat:'Ropa / compras online'},
-    {id:'mp-mercadolibre',nombre:'MercadoLibre',tarjeta:'Mercado Pago',monto:24211.67,total:3,pagadas:2,inicio:'2026-02',cat:'Otro'},
-    {id:'mp-mixpintureria',nombre:'MixPintureria',tarjeta:'Mercado Pago',monto:46707.34,total:3,pagadas:0,inicio:'2026-04',cat:'Otro'},
-    {id:'mp-pintgiannoni',nombre:'PintGiannoni',tarjeta:'Mercado Pago',monto:18136.48,total:3,pagadas:0,inicio:'2026-04',cat:'Otro'},
-    {id:'mp-2ssrl',nombre:'2S SRL',tarjeta:'Mercado Pago',monto:8229.24,total:3,pagadas:0,inicio:'2026-04',cat:'Otro'}
-  ];
-  DS.saveCuotas(preload);
-})();
 
 // ═══ INIT ═══
 applyCats();

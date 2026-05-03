@@ -333,6 +333,25 @@ body{max-width:480px;margin:0 auto;display:flex;flex-direction:column;overflow:h
 .cuota-remaining{font-size:10px;color:var(--text2);margin-top:3px;line-height:1.4;}
 .cuota-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px;transition:color 0.15s;}
 .cuota-del:active{color:var(--danger);}
+.cuota-edit-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:4px;transition:color 0.15s;line-height:1;}
+.cuota-edit-btn:active,.cuota-edit-btn.active{color:var(--g4);}
+.cuota-edit-form{
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);
+  padding:14px;margin-top:6px;
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+.cuota-edit-form .ef-field{display:flex;flex-direction:column;gap:5px;}
+.cuota-edit-form .ef-lbl{font-size:9px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;font-weight:600;}
+.cuota-edit-form .ef-in{
+  background:var(--bg4);border:1px solid var(--border2);border-radius:8px;
+  color:var(--text);font-family:var(--dm);font-size:14px;padding:8px 10px;
+  outline:none;-webkit-appearance:none;width:100%;
+}
+.cuota-edit-form .ef-in:focus{border-color:var(--g3);}
+.ef-full{grid-column:1/-1;}
+.ef-btns{grid-column:1/-1;display:flex;gap:8px;margin-top:2px;}
+.ef-save{flex:1;padding:10px;background:var(--g3);color:#fff;border:none;border-radius:10px;font-family:var(--dm);font-size:13px;font-weight:600;cursor:pointer;}
+.ef-cancel{padding:10px 16px;background:var(--bg4);color:var(--text2);border:1px solid var(--border2);border-radius:10px;font-family:var(--dm);font-size:13px;cursor:pointer;}
 
 /* PROYECCION */
 .proj-card{background:rgba(14,14,14,0.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:var(--rL);padding:20px 22px;margin-bottom:14px;}
@@ -1308,6 +1327,94 @@ function renderAnalysis(){
         '<div class="an-trend-item"><div class="an-trend-lbl">% del ingreso</div><div class="an-trend-val" style="color:'+(totPct>40?'var(--danger)':totPct>25?'var(--amber)':'var(--ok)')+'">'+totPct+'%</div><div class="an-trend-sub">gastado hasta hoy</div></div>'+
       '</div>'+
     '</div>';
+  el.innerHTML += anWeekly(txs,dim)+anCatDelta(txs)+anFixedVar(txs,inc)+anQuarterly();
+}
+
+function anWeekly(txs,dim){
+  var isCur=Utils.isCurMonth(cy,cm);var todayD=isCur?new Date().getDate():dim;
+  var weeks=[{l:'Sem 1',f:1,t:7},{l:'Sem 2',f:8,t:14},{l:'Sem 3',f:15,t:21},{l:'Sem 4',f:22,t:dim}];
+  var totals=weeks.map(function(w){return txs.reduce(function(s,t){if(!t.date)return s;var d=parseInt(t.date.split('/')[0]);return d>=w.f&&d<=w.t?s+t.monto:s;},0);});
+  var maxW=Math.max.apply(null,totals.concat([1]));
+  var curW=Math.floor((todayD-1)/7);
+  return '<div class="an-section">'+
+    '<div class="an-title">Semana a semana</div>'+
+    weeks.map(function(w,i){
+      var isCurW=isCur&&i===curW;
+      return '<div class="an-bar-row">'+
+        '<div class="an-bar-label'+(isCurW?' cur':'')+'">'+w.l+'</div>'+
+        '<div class="an-bar-track"><div class="an-bar-fill" style="width:'+Utils.pct(totals[i],maxW)+'%;background:'+(isCurW?'var(--g3)':'var(--bg5)')+'"></div></div>'+
+        '<div class="an-bar-val" style="color:'+(isCurW?'var(--text)':'var(--text2)')+'">'+fmtS(totals[i])+'</div>'+
+      '</div>';
+    }).join('')+
+  '</div>';
+}
+
+function anCatDelta(txs){
+  var prevY=cy,prevM=cm-1;if(prevM<0){prevM=11;prevY--;}
+  var prevTxs=DS.getTxs(prevY,prevM);
+  var cur=Utils.groupByCat(txs).byCat;var prev=Utils.groupByCat(prevTxs).byCat;
+  var allCats={};Object.keys(cur).forEach(function(k){allCats[k]=1;});Object.keys(prev).forEach(function(k){allCats[k]=1;});
+  var cats=Object.keys(allCats).filter(function(c){return(cur[c]||0)>0||(prev[c]||0)>0;});
+  if(!cats.length)return'';
+  cats.sort(function(a,b){return(cur[b]||0)-(cur[a]||0);});cats=cats.slice(0,6);
+  return '<div class="an-section">'+
+    '<div class="an-title">Vs '+L.monthsS[prevM]+' por categoría</div>'+
+    cats.map(function(cat){
+      var c=cur[cat]||0,p=prev[cat]||0;
+      var delta=p>0?Math.round((c-p)/p*100):(c>0?100:0);
+      var dClass=delta>5?'up':delta<-5?'down':'flat';
+      return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">'+
+        '<div style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:'+(CAT_COLORS[cat]||'#555')+'"></div>'+
+        '<div style="flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escHTML(cat.split('/')[0].trim())+'</div>'+
+        '<div style="font-size:12px;font-family:var(--outfit);font-weight:600;color:var(--text2);min-width:52px;text-align:right;">'+fmtS(c)+'</div>'+
+        '<span class="an-delta '+dClass+'" style="min-width:44px;justify-content:center;">'+(delta>0?'+':'')+delta+'%</span>'+
+      '</div>';
+    }).join('')+
+  '</div>';
+}
+
+function anFixedVar(txs,inc){
+  var fixedCats=['Cuotas tarjetas','Suscripciones'];
+  var fixedAmt=txs.reduce(function(s,t){return fixedCats.indexOf(t.cat)>=0?s+t.monto:s;},0)+cuotasDelMes(cy,cm);
+  var varAmt=txs.reduce(function(s,t){return fixedCats.indexOf(t.cat)<0?s+t.monto:s;},0);
+  var total=fixedAmt+varAmt;
+  var committedPct=Utils.pct(fixedAmt,Math.max(total,1));
+  var fixedPct=Utils.pct(fixedAmt,inc);var varPct=Utils.pct(varAmt,inc);
+  return '<div class="an-section">'+
+    '<div class="an-title">Gasto fijo vs variable</div>'+
+    '<div style="background:var(--bg4);border-radius:6px;height:10px;overflow:hidden;margin-bottom:10px;display:flex;">'+
+      '<div style="width:'+committedPct+'%;background:var(--amber);transition:width 0.7s ease;"></div>'+
+      '<div style="flex:1;background:var(--g3);"></div>'+
+    '</div>'+
+    '<div style="display:flex;justify-content:space-between;font-size:12px;">'+
+      '<div><span style="color:var(--amber);font-weight:700;">▪</span> Fijo '+fmtS(fixedAmt)+' · '+fixedPct+'% ingreso</div>'+
+      '<div><span style="color:var(--g3);font-weight:700;">▪</span> Variable '+fmtS(varAmt)+' · '+varPct+'% ingreso</div>'+
+    '</div>'+
+  '</div>';
+}
+
+function anQuarterly(){
+  var months=[];
+  for(var i=2;i>=0;i--){
+    var y=cy,m=cm-i;if(m<0){m+=12;y--;}
+    var inc=income(y,m);var txs=DS.getTxs(y,m);
+    var tot=txs.reduce(function(s,t){return s+t.monto;},0);
+    var saving=inc-tot-cuotasDelMes(y,m)-gastosPrevios(y,m);
+    var savPct=Utils.pct(Math.max(0,saving),inc||1);
+    months.push({label:L.monthsS[m],saving:saving,savPct:savPct,isCur:i===0});
+  }
+  var maxS=Math.max.apply(null,months.map(function(m){return Math.max(0,m.saving);}).concat([1]));
+  return '<div class="an-section">'+
+    '<div class="an-title">Ahorro — últimos 3 meses</div>'+
+    months.map(function(mo){
+      var color=mo.saving<0?'var(--danger)':mo.savPct>=goal()?'var(--ok)':'var(--amber)';
+      return '<div class="an-bar-row">'+
+        '<div class="an-bar-label'+(mo.isCur?' cur':'')+'">'+mo.label+'</div>'+
+        '<div class="an-bar-track"><div class="an-bar-fill" style="width:'+(mo.saving<=0?0:Utils.pct(mo.saving,maxS))+'%;background:'+color+';"></div></div>'+
+        '<div class="an-bar-val" style="color:'+color+';">'+(mo.saving<0?'-':'')+fmtS(Math.abs(mo.saving))+'</div>'+
+      '</div>';
+    }).join('')+
+  '</div>';
 }
 
 // ═══ RENDER: TRANSACTIONS ═══
@@ -1444,10 +1551,32 @@ function addCuota(){
   g('cNombre').value='';g('cMonto').value='';g('cTotal').value='';g('cPagadas').value='';g('cInicio').value='';
   renderCuotas();renderDash();toast('Cuota agregada');
 }
+function toggleEditCuota(id){_editingCuotaId=(_editingCuotaId===id)?null:id;renderCuotas();}
+function cancelEditCuota(){_editingCuotaId=null;renderCuotas();}
+function saveEditCuota(id){
+  var cs=DS.getCuotas();var idx=-1;
+  for(var i=0;i<cs.length;i++){if(cs[i].id===id){idx=i;break;}}
+  if(idx===-1)return;
+  var nombre=g('ef-nombre-'+id).value.trim();
+  var monto=parseFloat(g('ef-monto-'+id).value);
+  var total=parseInt(g('ef-total-'+id).value);
+  var actual=parseInt(g('ef-actual-'+id).value);
+  var tarjeta=g('ef-tarjeta-'+id).value.trim();
+  if(!nombre||!monto||!total||!actual){toast('Completá todos los campos','warn');return;}
+  // Back-calculate inicio from cuota actual
+  var now=new Date();
+  var startIdx=now.getFullYear()*12+now.getMonth()-(actual-1);
+  var startY=Math.floor(startIdx/12);var startM=startIdx%12;
+  var inicio=startY+'-'+String(startM+1).padStart(2,'0');
+  cs[idx]=Object.assign({},cs[idx],{nombre:nombre,monto:monto,total:total,inicio:inicio,tarjeta:tarjeta});
+  DS.saveCuotas(cs);DS.drop();
+  _editingCuotaId=null;renderCuotas();renderDash();toast('Cuota actualizada');
+}
 function delCuota(id){
   DS.saveCuotas(DS.getCuotas().filter(function(c){return c.id!==id;}));
   DS.drop();renderCuotas();renderDash();toast('Cuota eliminada');
 }
+var _editingCuotaId=null;
 function renderCuotas(){
   var cs=DS.getCuotas();var now=new Date();var curIdx=now.getFullYear()*12+now.getMonth();
   g('cuotaList').innerHTML=!cs.length?'<div class="empty">Sin cuotas activas. Agreg\u00e1 una arriba.</div>':cs.map(function(c){
@@ -1455,19 +1584,36 @@ function renderCuotas(){
     var startIdx=parsed[0]*12+parsed[1];var cuotaActual=curIdx-startIdx+1;
     var restantes=c.total-Math.max(0,cuotaActual-1);
     var pct=Utils.pct(cuotaActual-1,c.total);var activa=cuotaActual>=1&&cuotaActual<=c.total;
-    return '<div class="cuota-item" style="'+(activa?'':'opacity:0.5')+'">'+
-      '<div class="cuota-icon">'+(CAT_EMOJI[c.cat]||'\u{1F4E6}')+'</div>'+
-      '<div class="cuota-info">'+
-        '<div class="cuota-name">'+escHTML(c.nombre)+'</div>'+
-        '<div class="cuota-meta">'+escHTML(c.tarjeta||'')+' \u00b7 '+(activa?'Cuota '+cuotaActual+'/'+c.total:(restantes<=0?'Finalizada':'Pr\u00f3ximamente'))+'</div>'+
-        '<div class="cuota-progress"><div class="cuota-prog-track"><div class="cuota-prog-fill" style="width:'+pct+'%;"></div></div></div>'+
+    var isEditing=_editingCuotaId===c.id;
+    var editForm=isEditing?
+      '<div class="cuota-edit-form">'+
+        '<div class="ef-field ef-full"><div class="ef-lbl">Nombre</div><input class="ef-in" id="ef-nombre-'+c.id+'" value="'+escHTML(c.nombre)+'"></div>'+
+        '<div class="ef-field"><div class="ef-lbl">Cuota actual (este mes)</div><input class="ef-in" type="number" id="ef-actual-'+c.id+'" value="'+Math.max(1,cuotaActual)+'" min="1" max="'+c.total+'"></div>'+
+        '<div class="ef-field"><div class="ef-lbl">Total cuotas</div><input class="ef-in" type="number" id="ef-total-'+c.id+'" value="'+c.total+'" min="1"></div>'+
+        '<div class="ef-field"><div class="ef-lbl">Monto por cuota</div><input class="ef-in" type="number" id="ef-monto-'+c.id+'" value="'+c.monto+'"></div>'+
+        '<div class="ef-field"><div class="ef-lbl">Tarjeta</div><input class="ef-in" id="ef-tarjeta-'+c.id+'" value="'+escHTML(c.tarjeta||'')+'"></div>'+
+        '<div class="ef-btns">'+
+          '<button class="ef-save" onclick="saveEditCuota(\''+c.id+'\')">Guardar</button>'+
+          '<button class="ef-cancel" onclick="cancelEditCuota()">Cancelar</button>'+
+        '</div>'+
+      '</div>':'';
+    return '<div>'+
+      '<div class="cuota-item" style="'+(activa?'':'opacity:0.5')+'">'+
+        '<div class="cuota-icon">'+(CAT_EMOJI[c.cat]||'\u{1F4E6}')+'</div>'+
+        '<div class="cuota-info">'+
+          '<div class="cuota-name">'+escHTML(c.nombre)+'</div>'+
+          '<div class="cuota-meta">'+escHTML(c.tarjeta||'')+' \u00b7 '+(activa?'Cuota '+cuotaActual+'/'+c.total:(restantes<=0?'Finalizada':'Pr\u00f3ximamente'))+'</div>'+
+          '<div class="cuota-progress"><div class="cuota-prog-track"><div class="cuota-prog-fill" style="width:'+pct+'%;"></div></div></div>'+
+        '</div>'+
+        '<div class="cuota-right">'+
+          '<div class="cuota-monto">'+fmt(c.monto)+'</div>'+
+          '<div class="cuota-remaining">por cuota</div>'+
+          '<div class="cuota-remaining" style="color:var(--text3);">total '+fmtS(c.monto*c.total)+'</div>'+
+        '</div>'+
+        '<button class="cuota-edit-btn'+(isEditing?' active':'')+'" onclick="toggleEditCuota(\''+escHTML(c.id)+'\')">\u270f</button>'+
+        '<button class="cuota-del" onclick="delCuota(\''+escHTML(c.id)+'\')">\u00d7</button>'+
       '</div>'+
-      '<div class="cuota-right">'+
-        '<div class="cuota-monto">'+fmt(c.monto)+'</div>'+
-        '<div class="cuota-remaining">por cuota</div>'+
-        '<div class="cuota-remaining" style="color:var(--text3);">total '+fmtS(c.monto*c.total)+'</div>'+
-      '</div>'+
-      '<button class="cuota-del" onclick="delCuota(\''+escHTML(c.id)+'\')">\u00d7</button>'+
+      editForm+
     '</div>';
   }).join('');
 

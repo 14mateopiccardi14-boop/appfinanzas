@@ -28,8 +28,13 @@
   --r:16px; --rL:22px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html{height:100%;background:var(--bg);color:var(--text);font-family:var(--dm);}
-body{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;overflow:hidden;position:relative;background:transparent;color:var(--text);font-family:var(--dm);}
+html{height:100%;background:var(--bg);color:var(--text);font-family:var(--dm);text-size-adjust:100%;-webkit-text-size-adjust:100%;}
+body{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;overflow:hidden;position:relative;background:transparent;color:var(--text);font-family:var(--dm);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-feature-settings:'cv11','ss01';}
+/* Números tabulares globales — no "bailan" al cambiar */
+.kpi-val,.ic-val,.usd-kpi-val,.bb-amount,.tcard-amount,.bycard-amount,
+.kpi-delta,.kpi-sub,.tx-val,.cat-nums,.an-bar-val,.meter-pct,.ma-val,
+.terceros-total,.ter-person-total,.ter-item-amount,.ex-amount,
+.inc-total-val,.hm-cell{font-variant-numeric:tabular-nums;font-feature-settings:'tnum';}
 
 /* AURORA */
 .aurora-bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:var(--bg);}
@@ -111,25 +116,43 @@ body.theme-paper .ab,body.light .ab{mix-blend-mode:multiply;filter:blur(70px);}
 
 /* NAV */
 .nav{
-  display:flex;background:rgba(var(--bgRGB),0.82);backdrop-filter:blur(24px);
-  -webkit-backdrop-filter:blur(24px);border-top:1px solid var(--border);
-  padding-bottom:env(safe-area-inset-bottom,0);position:sticky;bottom:0;z-index:200;
+  display:flex;
+  background:rgba(var(--bgRGB),0.7);
+  backdrop-filter:blur(28px) saturate(180%);
+  -webkit-backdrop-filter:blur(28px) saturate(180%);
+  border-top:1px solid var(--border2);
+  padding:6px 8px calc(env(safe-area-inset-bottom,0) + 8px);
+  position:sticky;bottom:0;z-index:200;
+  box-shadow:0 -4px 24px rgba(0,0,0,0.18);
 }
 .nb{
   flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;
   padding:9px 2px 8px;background:none;border:none;cursor:pointer;
-  font-family:var(--dm);font-size:8.5px;font-weight:500;color:var(--text3);
-  letter-spacing:0.04em;text-transform:uppercase;transition:color 0.2s;position:relative;
+  font-family:var(--dm);font-size:9px;font-weight:600;color:var(--text3);
+  letter-spacing:0.02em;text-transform:uppercase;
+  transition:color 0.28s cubic-bezier(0.22,1,0.36,1);
+  position:relative;z-index:2;border-radius:12px;
 }
-.nb svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;transition:stroke 0.2s;}
-@media (max-width:360px){.nb{font-size:0;}.nb svg{width:20px;height:20px;}}
-.nb.active{color:var(--g4);}
-.nb::after{
-  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
-  width:0;height:2px;background:var(--g4);border-radius:0 0 3px 3px;
-  transition:width 0.3s cubic-bezier(0.34,1.56,0.64,1);
+.nb svg{
+  width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;
+  transition:stroke 0.28s,transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
 }
-.nb.active::after{width:20px;}
+@media (max-width:360px){.nb{font-size:0;}.nb svg{width:21px;height:21px;}}
+.nb.active{color:#fff;}
+.nb.active svg{transform:translateY(-1px) scale(1.05);}
+/* Pill indicador que se desliza entre tabs */
+.nav-pill{
+  position:absolute;top:6px;height:calc(100% - 14px - env(safe-area-inset-bottom,0));
+  background:linear-gradient(180deg,var(--g4),var(--g2));
+  border:1px solid rgba(var(--gRGB),0.4);
+  border-radius:12px;z-index:1;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.18) inset,
+    0 -1px 0 rgba(0,0,0,0.25) inset,
+    0 4px 14px rgba(var(--gRGB),0.4);
+  transition:left 0.32s cubic-bezier(0.22,1,0.36,1),width 0.32s cubic-bezier(0.22,1,0.36,1),background 0.3s;
+  pointer-events:none;
+}
 
 /* PANELS */
 .panel{display:none;padding-bottom:32px;}
@@ -226,7 +249,7 @@ body.theme-paper .ab,body.light .ab{mix-blend-mode:multiply;filter:blur(70px);}
 .eye-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.45);padding:4px;display:flex;align-items:center;transition:color 0.15s;}
 .eye-btn:active{color:rgba(255,255,255,0.9);}
 .eye-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;}
-.ic-val{font-family:var(--outfit);font-size:34px;font-weight:700;color:#fff;letter-spacing:-1px;line-height:1;position:relative;z-index:1;}
+.ic-val{font-family:var(--outfit);font-size:42px;font-weight:700;color:#fff;letter-spacing:-1.6px;line-height:1;position:relative;z-index:1;text-shadow:0 2px 8px rgba(0,0,0,0.18);}
 .ic-sub{font-size:11px;color:rgba(255,255,255,0.4);margin-top:6px;position:relative;z-index:1;}
 
 /* KPI GRID */
@@ -238,7 +261,7 @@ body.theme-paper .ab,body.light .ab{mix-blend-mode:multiply;filter:blur(70px);}
 }
 .kpi.alert{border-color:var(--gL2);}
 .kpi-lbl{font-size:9px;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;font-weight:600;margin-bottom:8px;}
-.kpi-val{font-family:var(--outfit);font-size:21px;font-weight:700;color:var(--text);line-height:1;}
+.kpi-val{font-family:var(--outfit);font-size:22px;font-weight:700;color:var(--text);line-height:1;letter-spacing:-0.6px;}
 .kpi-top{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px;}
 .kpi-delta{
   font-family:var(--dm);font-size:9.5px;font-weight:600;
@@ -1601,6 +1624,7 @@ body.theme-paper .aurora-bg,body.light .aurora-bg{opacity:0.18;}
 
 <!-- NAV -->
 <nav class="nav">
+  <div class="nav-pill" id="navPill"></div>
   <button class="nb active" id="nb-dash" onclick="showP('dash')">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
     Inicio
@@ -2156,6 +2180,7 @@ function showP(p){
     g('panel-'+id).classList.toggle('active',id===p);
     var nb=g('nb-'+id);if(nb)nb.classList.toggle('active',id===p);
   });
+  positionNavPill(p);
   g('scroll').scrollTop=0;
   if(p==='dash'){
     renderDash();
@@ -2212,6 +2237,38 @@ function delExtraIncome(i){
 }
 function prevM(){cm--;if(cm<0){cm=11;cy--;}DS.drop();renderAll();}
 function nextM(){cm++;if(cm>11){cm=0;cy++;}DS.drop();renderAll();}
+function positionNavPill(panelId){
+  var pill=g('navPill');var btn=g('nb-'+panelId);
+  if(!pill||!btn)return;
+  var nav=btn.parentElement;
+  var btnRect=btn.getBoundingClientRect();
+  var navRect=nav.getBoundingClientRect();
+  pill.style.left=(btnRect.left-navRect.left)+'px';
+  pill.style.width=btnRect.width+'px';
+}
+window.addEventListener('resize',function(){
+  // Re-posicionar pill al cambiar tamaño
+  var active=document.querySelector('.nb.active');
+  if(active){var id=active.id.replace('nb-','');positionNavPill(id);}
+});
+
+// ═══ NUMBER ANIMATION (count-up) ═══
+var _animatedNums=new WeakSet();
+function animateNumber(el,from,to,duration,formatter){
+  if(!el)return;
+  duration=duration||700;
+  var start=performance.now();
+  var ease=function(t){return 1-Math.pow(1-t,3);}; // ease-out-cubic
+  function step(now){
+    var t=Math.min((now-start)/duration,1);
+    var val=from+(to-from)*ease(t);
+    el.textContent=formatter?formatter(val):Math.round(val);
+    if(t<1)requestAnimationFrame(step);
+    else el.textContent=formatter?formatter(to):to;
+  }
+  requestAnimationFrame(step);
+}
+
 function toggleHide(){
   hidden=!hidden;
   g('eyeIco').innerHTML=hidden?'<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>':'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
@@ -3665,6 +3722,8 @@ applyRecurrings();
 initAddPanel();
 renderAddChips();
 renderAll();
+// Posicionar pill del nav inicialmente
+setTimeout(function(){positionNavPill('dash');},100);
 // Light mode persistido
 // Aplicar tema persistido (migra de lightMode viejo si existía)
 (function(){

@@ -708,17 +708,51 @@ body{max-width:480px;margin:0 auto;display:flex;flex-direction:column;overflow:h
 .empty-state-mini{font-size:12px;color:var(--text2);text-align:center;padding:14px;font-style:italic;}
 
 /* CARDS SETTINGS */
-.card-cfg-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);gap:10px;}
-.card-cfg-row:last-child{border-bottom:none;}
-.card-cfg-name{font-size:13px;color:var(--text);font-weight:500;flex:1;min-width:0;}
-.card-cfg-fields{display:flex;gap:8px;flex-shrink:0;}
+.card-cfg-row{
+  display:flex;align-items:center;padding:10px;border:1px solid var(--border);border-radius:11px;
+  gap:10px;margin-bottom:8px;background:var(--bg3);
+}
+.card-cfg-icon{width:30px;height:30px;border-radius:8px;background:var(--bg4);
+  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.card-cfg-name-wrap{flex:1;min-width:0;}
+.card-cfg-name-input{
+  width:100%;background:transparent;border:none;outline:none;
+  font-size:13px;color:var(--text);font-weight:500;font-family:var(--dm);
+  padding:2px 0;min-width:0;border-bottom:1px dashed transparent;transition:border-color 0.15s;
+}
+.card-cfg-name-input:hover,.card-cfg-name-input:focus{border-bottom-color:var(--border3);}
+.card-cfg-fields{display:flex;gap:6px;flex-shrink:0;}
 .card-cfg-field{display:flex;flex-direction:column;align-items:center;gap:2px;}
-.card-cfg-field label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;}
-.card-cfg-field input{width:46px;text-align:center;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:6px 4px;font-family:var(--outfit);font-size:13px;font-weight:600;color:var(--text);}
+.card-cfg-field label{font-size:8.5px;color:var(--text3);text-transform:uppercase;letter-spacing:0.4px;}
+.card-cfg-field input{width:42px;text-align:center;background:var(--bg);border:1px solid var(--border2);border-radius:7px;padding:5px 3px;font-family:var(--outfit);font-size:12.5px;font-weight:600;color:var(--text);}
 .card-cfg-field input:focus{outline:none;border-color:var(--g3);}
-.card-cfg-empty{font-size:11px;color:var(--text3);font-style:italic;}
+.card-cfg-empty{font-size:10.5px;color:var(--text3);font-style:italic;flex-shrink:0;padding:0 4px;}
+.card-cfg-del{
+  background:var(--bg4);border:1px solid var(--border);color:var(--text2);
+  width:26px;height:26px;border-radius:8px;cursor:pointer;font-size:15px;line-height:1;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all 0.15s;
+}
+.card-cfg-del:active{transform:scale(0.9);}
 
-/* RECURRING */
+/* RECURRING FORM */
+.rec-form{
+  margin-top:14px;padding:14px;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:12px;animation:fadeUp 0.22s ease;
+}
+.rec-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 10px;}
+.rec-form-field{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.rec-form-field-full{grid-column:1/-1;}
+.rec-form-field label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.4px;font-weight:600;}
+.rec-form-field input,.rec-form-field select{
+  background:var(--bg);border:1px solid var(--border2);border-radius:9px;
+  padding:9px 11px;font-size:13px;font-family:var(--dm);color:var(--text);
+  font-weight:500;width:100%;min-width:0;transition:border-color 0.15s;
+}
+.rec-form-field input:focus,.rec-form-field select:focus{outline:none;border-color:var(--g3);}
+.rec-form-field select{cursor:pointer;}
+
+/* RECURRING ITEM */
 .rec-item{display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:11px;margin-bottom:8px;}
 .rec-body{flex:1;min-width:0;}
 .rec-name{font-size:13px;color:var(--text);font-weight:500;}
@@ -1330,22 +1364,64 @@ body.theme-paper .aurora-bg,body.light .aurora-bg{opacity:0.18;}
         </div>
       </div>
       <div class="set-card">
-        <div class="set-title">Tarjetas</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.5;">Configurá el día de cierre y vencimiento de cada tarjeta. La app va a usar esa info para asignar cuotas y mostrar avisos.</div>
+        <div class="set-title">Tarjetas y medios de pago</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.5;">Configurá tus tarjetas y formas de pago. Para cada una podés definir día de cierre y vencimiento.</div>
         <div id="cardsSettings"></div>
+        <div class="card-add-form" id="cardAddForm" style="display:none;">
+          <div class="rec-form-grid" style="grid-template-columns:1fr;">
+            <div class="rec-form-field rec-form-field-full">
+              <label>Nombre</label>
+              <input type="text" id="newCardName" placeholder="Ej: Naranja X, American Express...">
+            </div>
+            <div class="rec-form-field rec-form-field-full">
+              <label>Tipo</label>
+              <select id="newCardType">
+                <option value="credit">💳 Tarjeta de crédito (con cierre)</option>
+                <option value="debit">💳 Débito / Billetera virtual</option>
+                <option value="cash">💵 Efectivo</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button class="btn-sec" onclick="toggleCardAddForm(false)" style="flex:1;font-size:12px;padding:9px;">Cancelar</button>
+            <button class="btn-pri" onclick="addPaymentMethod()" style="flex:2;font-size:12px;padding:9px;">Agregar</button>
+          </div>
+        </div>
+        <button class="btn-full btn-exp" id="cardAddBtn" onclick="toggleCardAddForm(true)" style="margin-top:10px;">+ Nueva tarjeta o medio</button>
       </div>
       <div class="set-card">
         <div class="set-title">Gastos recurrentes</div>
         <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.5;">Suscripciones, abonos, lo que se repite cada mes. La app los carga automático cuando llega el día.</div>
         <div id="recurringList"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;">
-          <input type="text" class="sr-in" id="recDesc" placeholder="Netflix" style="width:auto;">
-          <input type="number" class="sr-in" id="recMonto" placeholder="Monto" style="width:auto;">
-          <input type="number" class="sr-in" id="recDay" placeholder="Día (1-28)" min="1" max="28" style="width:auto;">
-          <select class="sr-in" id="recCat" style="width:auto;font-family:var(--dm);font-size:13px;"></select>
-          <select class="sr-in" id="recTarjeta" style="width:auto;font-family:var(--dm);font-size:13px;grid-column:1/-1;"></select>
+        <div class="rec-form" id="recForm" style="display:none;">
+          <div class="rec-form-grid">
+            <div class="rec-form-field rec-form-field-full">
+              <label>Descripción</label>
+              <input type="text" id="recDesc" placeholder="Netflix, Spotify, Gym...">
+            </div>
+            <div class="rec-form-field">
+              <label>Monto</label>
+              <input type="number" id="recMonto" placeholder="0" inputmode="numeric">
+            </div>
+            <div class="rec-form-field">
+              <label>Día del mes</label>
+              <input type="number" id="recDay" placeholder="5" min="1" max="28" inputmode="numeric">
+            </div>
+            <div class="rec-form-field">
+              <label>Categoría</label>
+              <select id="recCat"></select>
+            </div>
+            <div class="rec-form-field">
+              <label>Tarjeta / Pago</label>
+              <select id="recTarjeta"></select>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button class="btn-sec" onclick="toggleRecForm(false)" style="flex:1;font-size:12px;padding:9px;">Cancelar</button>
+            <button class="btn-pri" onclick="addRecurring()" style="flex:2;font-size:12px;padding:9px;">Guardar recurrente</button>
+          </div>
         </div>
-        <button class="btn-full btn-exp" onclick="addRecurring()" style="margin-top:10px;">+ Agregar recurrente</button>
+        <button class="btn-full btn-exp" id="recAddBtn" onclick="toggleRecForm(true)" style="margin-top:10px;">+ Agregar recurrente</button>
       </div>
       <div class="set-card">
         <div class="set-title">Apariencia</div>
@@ -2214,10 +2290,16 @@ function markAllPaid(nombre){
 function renderCardsSettings(){
   var el=g('cardsSettings');if(!el)return;
   var methods=getPaymentMethods();
+  if(!methods.length){el.innerHTML='<div class="empty-state-mini">Sin tarjetas configuradas todavía.</div>';return;}
   el.innerHTML=methods.map(function(c,i){
     var isCash=/efectivo/i.test(c.value);
-    if(isCash)return'<div class="card-cfg-row"><div class="card-cfg-name">'+c.label+'</div><div class="card-cfg-empty">Sin cierre</div></div>';
-    return'<div class="card-cfg-row"><div class="card-cfg-name">'+c.label+'</div><div class="card-cfg-fields"><div class="card-cfg-field"><label>Cierre</label><input type="number" min="1" max="31" value="'+(c.closeDay||'')+'" onchange="updateCardDay('+i+',\'closeDay\',this.value)"></div><div class="card-cfg-field"><label>Vence</label><input type="number" min="1" max="31" value="'+(c.dueDay||'')+'" onchange="updateCardDay('+i+',\'dueDay\',this.value)"></div></div></div>';
+    var canDelete=methods.length>1; // siempre tener al menos 1
+    var fieldsHTML=isCash
+      ? '<div class="card-cfg-empty">Sin cierre</div>'
+      : '<div class="card-cfg-fields"><div class="card-cfg-field"><label>Cierre</label><input type="number" min="1" max="31" value="'+(c.closeDay||'')+'" onchange="updateCardDay('+i+',\'closeDay\',this.value)"></div><div class="card-cfg-field"><label>Vence</label><input type="number" min="1" max="31" value="'+(c.dueDay||'')+'" onchange="updateCardDay('+i+',\'dueDay\',this.value)"></div></div>';
+    var nameHTML='<input class="card-cfg-name-input" value="'+escHTML(c.value)+'" onchange="renamePaymentMethod('+i+',this.value)">';
+    var delBtn=canDelete?'<button class="card-cfg-del" onclick="delPaymentMethod('+i+',event)" title="Eliminar">×</button>':'';
+    return'<div class="card-cfg-row"><div class="card-cfg-icon">'+(isCash?'💵':'💳')+'</div><div class="card-cfg-name-wrap">'+nameHTML+'</div>'+fieldsHTML+delBtn+'</div>';
   }).join('');
 }
 function updateCardDay(idx,field,val){
@@ -2227,7 +2309,78 @@ function updateCardDay(idx,field,val){
   methods[idx][field]=(v>=1&&v<=31)?v:null;
   localStorage.setItem('paymentMethods',JSON.stringify(methods));
   renderDash();
-  toast('Tarjetas actualizadas','success');
+  toast('Tarjeta actualizada','success');
+}
+function renamePaymentMethod(idx,newName){
+  var methods=getPaymentMethods();
+  if(!methods[idx])return;
+  newName=(newName||'').trim();
+  if(!newName){toast('El nombre no puede estar vacío','warn');renderCardsSettings();return;}
+  if(methods.some(function(m,i){return i!==idx&&m.value===newName;})){toast('Ya existe una tarjeta con ese nombre','warn');renderCardsSettings();return;}
+  var oldName=methods[idx].value;
+  methods[idx].value=newName;
+  // Mantener emoji + nombre nuevo
+  var emoji=(/efectivo/i.test(newName)?'💵':'💳');
+  methods[idx].label=emoji+' '+newName;
+  localStorage.setItem('paymentMethods',JSON.stringify(methods));
+  // Migrar referencias en txs y cuotas
+  Object.keys(localStorage).forEach(function(k){
+    if(k.indexOf('txs:')===0){
+      try{var txs=JSON.parse(localStorage.getItem(k))||[];var changed=false;
+        txs.forEach(function(t){if(t.tarjeta===oldName){t.tarjeta=newName;changed=true;}});
+        if(changed)localStorage.setItem(k,JSON.stringify(txs));}catch(e){}
+    }
+  });
+  try{var cs=JSON.parse(localStorage.getItem('cuotas_activas')||'[]');var ch=false;
+    cs.forEach(function(c){if(c.tarjeta===oldName){c.tarjeta=newName;ch=true;}});
+    if(ch)localStorage.setItem('cuotas_activas',JSON.stringify(cs));}catch(e){}
+  DS.drop();renderDash();
+  toast('Tarjeta renombrada','success');
+}
+function delPaymentMethod(idx,ev){
+  var btn=ev&&ev.currentTarget;
+  if(btn&&btn.dataset.confirm!=='1'){
+    btn.dataset.confirm='1';
+    btn.textContent='?';
+    btn.style.background='var(--danger)';btn.style.color='#fff';
+    setTimeout(function(){if(btn.dataset.confirm==='1'){btn.dataset.confirm='';btn.textContent='×';btn.style.background='';btn.style.color='';}},3000);
+    return;
+  }
+  var methods=getPaymentMethods();
+  if(!methods[idx])return;
+  var name=methods[idx].value;
+  // Verificar que no haya cuotas usando esta tarjeta (no se pueden borrar — son ligadas)
+  var cs=DS.getCuotas();
+  var used=cs.some(function(c){return c.tarjeta===name;});
+  if(used){toast('No se puede borrar: hay cuotas activas con esta tarjeta','error');return;}
+  methods.splice(idx,1);
+  localStorage.setItem('paymentMethods',JSON.stringify(methods));
+  renderCardsSettings();renderDash();
+  toast('Tarjeta eliminada','success');
+}
+function toggleCardAddForm(open){
+  var form=g('cardAddForm');var btn=g('cardAddBtn');
+  if(!form||!btn)return;
+  form.style.display=open?'block':'none';
+  btn.style.display=open?'none':'block';
+  if(open){setTimeout(function(){g('newCardName').focus();},80);}
+}
+function addPaymentMethod(){
+  var name=(g('newCardName').value||'').trim();
+  var type=g('newCardType').value;
+  if(!name){toast('Ingresá un nombre','warn');return;}
+  var methods=getPaymentMethods();
+  if(methods.some(function(m){return m.value.toLowerCase()===name.toLowerCase();})){toast('Ya existe una tarjeta con ese nombre','warn');return;}
+  var emoji=(type==='cash'?'💵':'💳');
+  var newMethod={value:name,label:emoji+' '+name,closeDay:null,dueDay:null};
+  methods.push(newMethod);
+  localStorage.setItem('paymentMethods',JSON.stringify(methods));
+  g('newCardName').value='';
+  toggleCardAddForm(false);
+  renderCardsSettings();renderDash();
+  // Actualizar selects de cuotas/recurring si están abiertos
+  populateRecurringSelects();
+  toast('Tarjeta agregada','success');
 }
 function renderRecurringSettings(){
   var el=g('recurringList');if(!el)return;
@@ -2236,6 +2389,13 @@ function renderRecurringSettings(){
   el.innerHTML=list.map(function(r,i){
     return'<div class="rec-item"><div class="rec-body"><div class="rec-name">'+(CAT_EMOJI[r.cat]||'📦')+' '+escHTML(r.desc)+'</div><div class="rec-meta">'+fmtS(r.monto)+' · día '+r.day+' · '+escHTML(r.tarjeta||'Efectivo')+'</div></div><button class="rec-del" onclick="delRecurring('+i+')">×</button></div>';
   }).join('');
+}
+function toggleRecForm(open){
+  var form=g('recForm');var btn=g('recAddBtn');
+  if(!form||!btn)return;
+  form.style.display=open?'block':'none';
+  btn.style.display=open?'none':'block';
+  if(open){setTimeout(function(){g('recDesc').focus();},80);}
 }
 function addRecurring(){
   var d=g('recDesc').value.trim();
@@ -2249,6 +2409,7 @@ function addRecurring(){
   localStorage.setItem('recurring',JSON.stringify(list));
   g('recDesc').value='';g('recMonto').value='';g('recDay').value='';
   renderRecurringSettings();
+  toggleRecForm(false);
   toast('Recurrente agregado','success');
 }
 function delRecurring(i){

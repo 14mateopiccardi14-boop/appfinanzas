@@ -33,37 +33,53 @@ body{max-width:480px;margin:0 auto;display:flex;flex-direction:column;overflow:h
 
 /* AURORA */
 .aurora-bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:var(--bg);}
-.ab{position:absolute;border-radius:50%;filter:blur(100px);}
+.ab{position:absolute;border-radius:50%;filter:blur(80px);mix-blend-mode:screen;}
 .ab1{
-  width:380px;height:280px;
-  background:radial-gradient(ellipse,rgba(var(--gDarkRGB),0.55) 0%,transparent 70%);
+  width:420px;height:320px;
+  background:radial-gradient(ellipse,rgba(var(--gRGB),0.55) 0%,transparent 70%);
   top:-80px;left:-60px;
-  animation:ab1 22s ease-in-out infinite;
+  animation:ab1 18s ease-in-out infinite;
 }
 .ab2{
-  width:300px;height:320px;
-  background:radial-gradient(ellipse,rgba(80,6,18,0.45) 0%,transparent 70%);
-  top:35%;right:-80px;
-  animation:ab2 28s ease-in-out infinite;
+  width:340px;height:340px;
+  background:radial-gradient(ellipse,rgba(var(--gDarkRGB),0.50) 0%,transparent 70%);
+  top:30%;right:-80px;
+  animation:ab2 22s ease-in-out infinite;
 }
 .ab3{
-  width:420px;height:220px;
-  background:radial-gradient(ellipse,rgba(60,4,14,0.38) 0%,transparent 70%);
-  bottom:28%;left:-100px;
-  animation:ab3 32s ease-in-out infinite;
+  width:460px;height:260px;
+  background:radial-gradient(ellipse,rgba(var(--gDarkRGB),0.42) 0%,transparent 70%);
+  bottom:24%;left:-110px;
+  animation:ab3 26s ease-in-out infinite;
 }
 .ab4{
-  width:260px;height:260px;
-  background:radial-gradient(ellipse,rgba(140,16,36,0.3) 0%,transparent 70%);
-  bottom:-60px;right:5%;
-  animation:ab4 24s ease-in-out infinite;
+  width:300px;height:300px;
+  background:radial-gradient(ellipse,rgba(var(--gRGB),0.35) 0%,transparent 70%);
+  bottom:-80px;right:0%;
+  animation:ab4 20s ease-in-out infinite;
 }
 .ab5{
-  width:200px;height:180px;
-  background:radial-gradient(ellipse,rgba(100,10,24,0.35) 0%,transparent 70%);
-  top:55%;left:30%;
-  animation:ab5 19s ease-in-out infinite;
+  width:240px;height:220px;
+  background:radial-gradient(ellipse,rgba(var(--gRGB),0.40) 0%,transparent 70%);
+  top:50%;left:25%;
+  animation:ab5 16s ease-in-out infinite;
 }
+/* Capa extra de "respiración" — gradient mesh sutil que se mueve más lento */
+.ab-mesh{
+  position:absolute;inset:-30%;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 20%,rgba(var(--gRGB),0.10),transparent 50%),
+    radial-gradient(ellipse 50% 50% at 80% 50%,rgba(var(--gDarkRGB),0.10),transparent 50%),
+    radial-gradient(ellipse 40% 30% at 50% 90%,rgba(var(--gRGB),0.08),transparent 50%);
+  animation:meshFloat 45s ease-in-out infinite;
+  filter:blur(40px);pointer-events:none;
+}
+@keyframes meshFloat{
+  0%,100%{transform:translate(0,0) rotate(0deg) scale(1);}
+  33%{transform:translate(4%,-2%) rotate(2deg) scale(1.05);}
+  66%{transform:translate(-3%,3%) rotate(-1deg) scale(0.97);}
+}
+body.theme-paper .ab,body.light .ab{mix-blend-mode:multiply;filter:blur(70px);}
 @keyframes ab1{
   0%,100%{transform:translate(0,0) scale(1);opacity:.7;}
   30%{transform:translate(55px,70px) scale(1.15);opacity:.9;}
@@ -542,25 +558,34 @@ body{max-width:480px;margin:0 auto;display:flex;flex-direction:column;overflow:h
 .cc-add-form{padding-top:14px;margin-top:14px;border-top:1px solid var(--border);}
 
 /* HEATMAP MENSUAL */
-.hm-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
-.hm-dow{font-size:9.5px;color:var(--text3);text-align:center;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;padding:2px 0 4px;}
+.hm-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.hm-dow{font-size:9.5px;color:var(--text3);text-align:center;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;padding:2px 0 6px;}
 .hm-cell{
-  aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;
-  font-family:var(--outfit);font-weight:600;font-size:11px;color:var(--text);
-  border:1px solid transparent;transition:transform 0.1s;cursor:pointer;
-  min-height:30px;
+  aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:var(--outfit);font-weight:600;font-size:12px;color:var(--text);
+  border:1px solid var(--border);transition:transform 0.12s,box-shadow 0.15s;cursor:pointer;
+  min-height:36px;gap:1px;position:relative;
+  background:var(--bg3);
 }
-.hm-cell:active{transform:scale(0.85);}
+.hm-cell.has-spend{color:#fff;border-color:transparent;text-shadow:0 1px 2px rgba(0,0,0,0.4);}
+.hm-cell:active{transform:scale(0.9);}
+.hm-cell:hover{box-shadow:0 2px 8px rgba(0,0,0,0.2);}
 .hm-empty{visibility:hidden;}
-.hm-zero{color:var(--text3);}
-.hm-today{border:1.5px solid var(--g4);box-shadow:0 0 8px var(--gL2);}
+.hm-zero{color:var(--text3);opacity:0.55;}
+.hm-future{opacity:0.35;}
+.hm-today{
+  border:1.5px solid var(--g4)!important;
+  box-shadow:0 0 0 2px var(--gL2),0 0 12px var(--gL2);
+}
+.hm-cell-tag{font-size:7.5px;font-weight:600;opacity:0.85;line-height:1;letter-spacing:0.2px;}
 .hm-legend{display:flex;align-items:center;gap:6px;font-size:9.5px;color:var(--text3);}
 .hm-grad{
   width:54px;height:8px;border-radius:4px;
   background:linear-gradient(90deg,var(--bg3),rgba(var(--gRGB),0.85));
 }
-.hm-foot{font-size:10.5px;color:var(--text2);text-align:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);}
+.hm-foot{font-size:10.5px;color:var(--text2);text-align:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);}
 .hm-foot b{color:var(--text);}
+body.theme-paper .hm-cell.has-spend{color:#fff;}
 
 /* CARDS NUEVAS (FASE 1) */
 .close-banner{
@@ -1097,6 +1122,7 @@ body.theme-paper .aurora-bg,body.light .aurora-bg{opacity:0.18;}
 </head>
 <body>
 <div class="aurora-bg" aria-hidden="true">
+  <div class="ab-mesh"></div>
   <div class="ab ab1"></div>
   <div class="ab ab2"></div>
   <div class="ab ab3"></div>
@@ -2391,13 +2417,19 @@ function renderHeatmap(txs){
     var dayNum=i-firstDow+1;
     if(dayNum<1||dayNum>dim){cellsHTML+='<div class="hm-cell hm-empty"></div>';continue;}
     var amt=byDay[dayNum]||0;
-    var intensity=amt>0?(0.15+(amt/max)*0.75):0;
-    var bg=amt>0?'rgba(var(--gRGB),'+intensity.toFixed(2)+')':'var(--bg3)';
+    var hasSpend=amt>0;
+    // Escala suave: empezar en 0.35 para que algo de poco se vea, hasta 0.95 para el máximo
+    var intensity=hasSpend?(0.35+Math.pow(amt/max,0.7)*0.60):0;
+    var bg=hasSpend?'rgba(var(--gRGB),'+intensity.toFixed(2)+')':'';
     var cls='hm-cell';
+    if(hasSpend)cls+=' has-spend';
+    var isFuture=isCurMonth&&dayNum>todayD;
+    if(isFuture&&!hasSpend)cls+=' hm-future';
     if(dayNum===todayD)cls+=' hm-today';
-    if(amt===0&&dayNum<=todayD)cls+=' hm-zero';
-    var titleAttr=dayNum+'/'+(cm+1)+(amt?' · '+fmtS(amt):' · sin gastos');
-    cellsHTML+='<div class="'+cls+'" style="background:'+bg+';" title="'+titleAttr+'">'+dayNum+'</div>';
+    if(!hasSpend&&!isFuture)cls+=' hm-zero';
+    var titleAttr=dayNum+'/'+(cm+1)+(amt?' · '+fmtS(amt):(isFuture?' · día futuro':' · sin gastos'));
+    var styleAttr=bg?'background:'+bg+';':'';
+    cellsHTML+='<div class="'+cls+'"'+(styleAttr?' style="'+styleAttr+'"':'')+' title="'+titleAttr+'" onclick="navigateToDay('+dayNum+')">'+dayNum+'</div>';
   }
   el.innerHTML='<div class="cc"><div class="cc-top" style="margin-bottom:14px;justify-content:space-between;align-items:center;">'+
     '<div class="cc-title">Mapa del mes</div>'+
@@ -2406,8 +2438,13 @@ function renderHeatmap(txs){
       dayLabels.map(function(l){return'<div class="hm-dow">'+l+'</div>';}).join('')+
       cellsHTML+
     '</div>'+
-    (maxDayKey?'<div class="hm-foot">Día más caro: <b>'+maxDayKey+'/'+(cm+1)+'</b> ('+fmtS(byDay[maxDayKey])+')'+(avgDay?' · Promedio: '+fmtS(avgDay):'')+'</div>':'')+
+    (maxDayKey?'<div class="hm-foot">Día más caro: <b>'+maxDayKey+'/'+(cm+1)+'</b> ('+fmtS(byDay[maxDayKey])+')'+(avgDay?' · Promedio diario: '+fmtS(avgDay):'')+'</div>':'')+
   '</div>';
+}
+function navigateToDay(d){
+  // Por ahora abre la pestaña gastos con búsqueda por la fecha
+  txSearchQuery=d+'/'+(cm+1);
+  showP('tx');
 }
 
 function showTerceros(){
@@ -2978,7 +3015,7 @@ function renderTxList(){
   var txs=allTxs;
   if(activeCardFilter)txs=txs.filter(function(t){return t.tarjeta===activeCardFilter;});
   if(activeCatFilter)txs=txs.filter(function(t){return t.cat===activeCatFilter;});
-  if(txSearchQuery){txs=txs.filter(function(t){return (t.desc||'').toLowerCase().indexOf(txSearchQuery)>=0||(t.cat||'').toLowerCase().indexOf(txSearchQuery)>=0;});}
+  if(txSearchQuery){txs=txs.filter(function(t){return (t.desc||'').toLowerCase().indexOf(txSearchQuery)>=0||(t.cat||'').toLowerCase().indexOf(txSearchQuery)>=0||(t.date||'')===txSearchQuery;});}
   if(!txs.length){
     var msg=txSearchQuery?'Sin resultados para "'+escHTML(txSearchQuery)+'"':(allTxs.length===0?'A\u00fan no cargaste gastos este mes':'Sin gastos en esta categor\u00eda');
     var emoji=allTxs.length===0?'\u{1F4ED}':'\u{1F50D}';

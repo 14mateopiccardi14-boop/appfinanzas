@@ -534,6 +534,10 @@ body{max-width:480px;margin:0 auto;display:flex;flex-direction:column;overflow:h
 .close-banner-sub{font-size:10.5px;color:var(--text2);margin-top:2px;}
 .close-banner-days{font-family:var(--outfit);font-weight:700;font-size:15px;color:var(--g5);flex-shrink:0;line-height:1;letter-spacing:-0.5px;}
 .close-banner-days-lbl{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;text-align:right;margin-top:2px;font-family:var(--dm);font-weight:500;}
+.close-banner+.close-banner{margin-top:-6px;}
+.close-banner--due{border-left-color:var(--amber);}
+.close-banner--due .close-banner-ico{background:rgba(200,122,10,0.16);color:var(--amber);}
+.close-banner--due .close-banner-days{color:var(--amber);}
 
 .usd-kpi{
   background:linear-gradient(135deg,rgba(61,158,114,0.12),rgba(61,158,114,0.03));
@@ -1623,6 +1627,26 @@ function daysToClose(closeDay){
   if(thisM<today){thisM=new Date(today.getFullYear(),today.getMonth()+1,closeDay);}
   return Math.ceil((thisM-today)/(1000*60*60*24));
 }
+// Calcula días hasta el próximo vencimiento.
+// Si dueDay < closeDay, el vencimiento es del mes siguiente al cierre.
+// Si dueDay >= closeDay, el vencimiento es del mismo mes que el cierre.
+function daysToDue(closeDay,dueDay){
+  if(!dueDay)return null;
+  var today=new Date();
+  var y=today.getFullYear(),m=today.getMonth();
+  var dueThis=new Date(y,m,dueDay);
+  // Si el día de vencimiento de este mes ya pasó, ir al siguiente
+  if(dueThis<today){dueThis=new Date(y,m+1,dueDay);}
+  return Math.ceil((dueThis-today)/(1000*60*60*24));
+}
+// Fecha label del próximo vencimiento. Devuelve algo como "7 Jul".
+function nextDueLabel(dueDay){
+  if(!dueDay)return null;
+  var today=new Date();
+  var d=new Date(today.getFullYear(),today.getMonth(),dueDay);
+  if(d<today)d=new Date(today.getFullYear(),today.getMonth()+1,dueDay);
+  return d.getDate()+' '+L.monthsS[d.getMonth()];
+}
 // período de facturación que cae en el mes cy/cm (entre cierre anterior y cierre del mes)
 function billingPeriod(card,y,m){
   if(!card.closeDay)return null;
@@ -2024,13 +2048,22 @@ function renderDash(){
 
 // ═══ RENDER: NEW CARDS (FASE 1) ═══
 function renderNewCards(txsAll,totalUSD,terceros){
-  // 1. BANNER CIERRE TARJETA
+  // 1. BANNERS CIERRE + VENCIMIENTO TARJETA (mostrar el más urgente de cada tipo si está a ≤3 días)
   var methods=getPaymentMethods();
-  var upcoming=methods.map(function(c){return{card:c,days:daysToClose(c.closeDay)};}).filter(function(x){return x.days!==null&&x.days<=3;}).sort(function(a,b){return a.days-b.days;});
-  if(upcoming.length){
-    var next=upcoming[0];
+  var upcomingClose=methods.map(function(c){return{card:c,days:daysToClose(c.closeDay),kind:'close'};}).filter(function(x){return x.days!==null&&x.days<=3;});
+  var upcomingDue=methods.map(function(c){return{card:c,days:daysToDue(c.closeDay,c.dueDay),kind:'due'};}).filter(function(x){return x.days!==null&&x.days<=3;});
+  var banners=upcomingClose.concat(upcomingDue).sort(function(a,b){return a.days-b.days;});
+  if(banners.length){
     var clockSVG='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>';
-    g('closeBanner').innerHTML='<div class="close-banner" onclick="toast(\'Cierre de '+escHTML(next.card.value)+' en '+next.days+' d\\u00edas\',\'info\')"><div class="close-banner-ico">'+clockSVG+'</div><div class="close-banner-body"><div class="close-banner-title">'+escHTML(next.card.value)+' · próximo cierre</div><div class="close-banner-sub">Día '+next.card.closeDay+' de este mes</div></div><div><div class="close-banner-days">'+next.days+'d</div><div class="close-banner-days-lbl">restan</div></div></div>';
+    var alertSVG='<svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+    g('closeBanner').innerHTML=banners.slice(0,2).map(function(b){
+      var isClose=b.kind==='close';
+      var title=escHTML(b.card.value)+(isClose?' · próximo cierre':' · próximo vencimiento');
+      var sub=isClose?('Día '+b.card.closeDay+' de este mes'):('Vence el '+nextDueLabel(b.card.dueDay));
+      var icon=isClose?clockSVG:alertSVG;
+      var borderClass=isClose?'':' close-banner--due';
+      return'<div class="close-banner'+borderClass+'"><div class="close-banner-ico">'+icon+'</div><div class="close-banner-body"><div class="close-banner-title">'+title+'</div><div class="close-banner-sub">'+sub+'</div></div><div><div class="close-banner-days">'+b.days+'d</div><div class="close-banner-days-lbl">'+(isClose?'cierra':'vence')+'</div></div></div>';
+    }).join('');
   }else{g('closeBanner').innerHTML='';}
 
   // 2. KPI USD ANCHO

@@ -743,13 +743,50 @@ body{max-width:480px;margin:0 auto;display:flex;flex-direction:column;overflow:h
 }
 .confirm-inline:active{transform:scale(0.96);}
 
-/* LIGHT MODE */
-body.light{
+/* THEMES — el default vive en :root (Aurora vino) */
+body.theme-midnight{
+  --g:#0e3a7a; --g2:#0f4b9c; --g3:#1457b8; --g4:#2070e0; --g5:#3a8af0;
+  --gL:rgba(20,87,184,0.15); --gL2:rgba(20,87,184,0.28);
+}
+body.theme-midnight .ab1,body.theme-midnight .ab2,body.theme-midnight .ab3,
+body.theme-midnight .ab4,body.theme-midnight .ab5{filter:hue-rotate(220deg) blur(100px);}
+
+body.theme-forest{
+  --g:#0e4a30; --g2:#0f5c3e; --g3:#147a52; --g4:#1d9a68; --g5:#2db580;
+  --gL:rgba(20,122,82,0.15); --gL2:rgba(20,122,82,0.28);
+}
+body.theme-forest .ab1,body.theme-forest .ab2,body.theme-forest .ab3,
+body.theme-forest .ab4,body.theme-forest .ab5{filter:hue-rotate(120deg) blur(100px);}
+
+body.theme-paper,body.light{
   --bg:#f6f4ef; --bg2:#fff; --bg3:#f0ede5; --bg4:#e6e2d8; --bg5:#dad5c9;
   --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.14); --border3:rgba(0,0,0,0.22);
   --text:#1a1815; --text2:#605c55; --text3:#90897e;
 }
-body.light .aurora-bg{opacity:0.35;}
+body.theme-paper .aurora-bg,body.light .aurora-bg{opacity:0.35;}
+
+/* THEME PICKER UI */
+.theme-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:8px;}
+.theme-opt{
+  position:relative;background:var(--bg3);border:1.5px solid var(--border2);
+  border-radius:14px;padding:14px 12px;cursor:pointer;transition:all 0.15s;
+  display:flex;align-items:center;gap:10px;
+}
+.theme-opt:active{transform:scale(0.97);}
+.theme-opt.active{border-color:var(--g4);box-shadow:0 0 0 2px var(--gL2);}
+.theme-swatch{
+  width:34px;height:34px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;border:1px solid rgba(255,255,255,0.08);
+}
+.theme-info{flex:1;min-width:0;}
+.theme-name{font-size:13px;color:var(--text);font-weight:600;letter-spacing:-0.2px;}
+.theme-desc{font-size:10.5px;color:var(--text2);margin-top:2px;}
+.theme-check{
+  width:18px;height:18px;border-radius:50%;background:var(--g4);color:#fff;
+  display:none;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;
+}
+.theme-opt.active .theme-check{display:flex;}
 
 /* TUTORIAL OVERLAY */
 .tut-overlay{
@@ -1296,7 +1333,8 @@ body.light .aurora-bg{opacity:0.35;}
       </div>
       <div class="set-card">
         <div class="set-title">Apariencia</div>
-        <div class="set-row"><div><div class="sr-lbl">Modo claro</div><div class="sr-sub">Cambiar a tema claro</div></div><label class="switch"><input type="checkbox" id="cfgLightMode" onchange="toggleLightMode()"><span class="switch-slider"></span></label></div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5;">Elegí el tono general de la app.</div>
+        <div class="theme-grid" id="themeGrid"></div>
       </div>
       <div class="set-card">
         <div class="set-title">Compartir</div>
@@ -2210,11 +2248,31 @@ function populateRecurringSelects(){
     t.innerHTML=methods.map(function(m){return'<option value="'+m.value+'">'+m.label+'</option>';}).join('');
   }
 }
-function toggleLightMode(){
-  var on=g('cfgLightMode').checked;
-  document.body.classList.toggle('light',on);
-  localStorage.setItem('lightMode',on?'true':'false');
-  toast(on?'Modo claro':'Modo oscuro','info');
+var THEMES=[
+  {id:'aurora',name:'Aurora vino',desc:'Oscuro · acento rojo',emoji:'🍷',swatch:'linear-gradient(135deg,#080808 50%,#a51427 50%)'},
+  {id:'midnight',name:'Medianoche',desc:'Oscuro · acento azul',emoji:'🌃',swatch:'linear-gradient(135deg,#080808 50%,#2070e0 50%)'},
+  {id:'forest',name:'Bosque',desc:'Oscuro · acento verde',emoji:'🌲',swatch:'linear-gradient(135deg,#080808 50%,#1d9a68 50%)'},
+  {id:'paper',name:'Papel',desc:'Claro · acento rojo',emoji:'📄',swatch:'linear-gradient(135deg,#f6f4ef 50%,#a51427 50%)'}
+];
+function currentTheme(){return localStorage.getItem('theme')||'aurora';}
+function applyTheme(id){
+  THEMES.forEach(function(t){document.body.classList.remove('theme-'+t.id);});
+  document.body.classList.remove('light'); // legacy
+  if(id&&id!=='aurora')document.body.classList.add('theme-'+id);
+}
+function setTheme(id){
+  applyTheme(id);
+  localStorage.setItem('theme',id);
+  renderThemeGrid();
+  toast('Tema: '+(THEMES.filter(function(t){return t.id===id;})[0]||{}).name,'info');
+}
+function renderThemeGrid(){
+  var el=g('themeGrid');if(!el)return;
+  var cur=currentTheme();
+  el.innerHTML=THEMES.map(function(t){
+    var active=t.id===cur?' active':'';
+    return'<div class="theme-opt'+active+'" onclick="setTheme(\''+t.id+'\')"><div class="theme-swatch" style="background:'+t.swatch+'">'+t.emoji+'</div><div class="theme-info"><div class="theme-name">'+escHTML(t.name)+'</div><div class="theme-desc">'+escHTML(t.desc)+'</div></div><div class="theme-check">✓</div></div>';
+  }).join('');
 }
 function shareSummary(){
   var txsAll=DS.getTxs(cy,cm);
@@ -2854,7 +2912,7 @@ function renderSettings(){
   g('previoSub').textContent='Gastos de '+L.months[cm]+' antes de usar la app';
   renderCustomCats();
   renderCardsSettings();renderRecurringSettings();populateRecurringSelects();
-  var lm=g('cfgLightMode');if(lm)lm.checked=document.body.classList.contains('light');
+  renderThemeGrid();
   var bud=buds();
   g('budFields').innerHTML=Object.entries(bud).map(function(entry){
     var cat=entry[0],val=entry[1];
@@ -2917,7 +2975,7 @@ function exportBackup(){
     }catch(e){}
   }
   // Claves simples (no-prefijo)
-  ['terceros','paymentMethods','recurring','catColors','lastUsedCard','tutorial:seen','lightMode'].forEach(function(k){
+  ['terceros','paymentMethods','recurring','catColors','lastUsedCard','tutorial:seen','lightMode','theme'].forEach(function(k){
     try{var v=localStorage.getItem(k);if(v!==null)data.simple[k]=v;}catch(e){}
   });
   data.cuotas=DS.getCuotas();
@@ -3091,7 +3149,12 @@ initAddPanel();
 renderAddChips();
 renderAll();
 // Light mode persistido
-if(localStorage.getItem('lightMode')==='true'){document.body.classList.add('light');}
+// Aplicar tema persistido (migra de lightMode viejo si existía)
+(function(){
+  var t=localStorage.getItem('theme');
+  if(!t&&localStorage.getItem('lightMode')==='true'){t='paper';localStorage.setItem('theme','paper');localStorage.removeItem('lightMode');}
+  applyTheme(t||'aurora');
+})();
 
 // ═══ SWIPE NAVIGATION ═══
 (function(){

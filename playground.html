@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Finanzas">
-<title>Finanzas · Mateo</title>
+<title>🧪 PLAYGROUND · Finanzas · Mateo</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -420,41 +420,11 @@ body{max-width:480px;margin:0 auto;display:flex;flex-direction:column;overflow:h
 .alert-msg{font-size:11px;color:var(--text2);margin-top:1px;}
 .alert-val{font-family:var(--outfit);font-size:14px;font-weight:700;flex-shrink:0;}
 
-/* TX TOOLBAR */
-.tx-toolbar{padding:12px 16px 4px;}
-.tx-search-row{
-  display:flex;align-items:center;gap:8px;
-  background:var(--bg2);border:1px solid var(--border2);border-radius:12px;
-  padding:10px 12px;margin-bottom:10px;transition:border-color 0.15s;
-}
-.tx-search-row:focus-within{border-color:var(--g3);}
-.tx-search-ico{width:15px;height:15px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
-.tx-search-row input{
-  flex:1;background:transparent;border:none;outline:none;
-  font-size:13.5px;font-family:var(--dm);color:var(--text);
-  min-width:0;
-}
-.tx-search-row input::placeholder{color:var(--text3);}
-.tx-card-filter{
-  display:flex;align-items:center;gap:8px;
-  background:rgba(165,20,39,0.12);border:1px solid rgba(165,20,39,0.32);
-  border-radius:11px;padding:9px 12px;margin-bottom:10px;
-  font-size:12px;color:var(--text);font-weight:500;
-}
-.tx-card-filter-ico{width:24px;height:24px;border-radius:7px;background:rgba(165,20,39,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
-.tx-card-filter-lbl{flex:1;}
-.tx-card-filter-sub{font-size:10px;color:var(--text2);}
-.tx-card-filter-x{
-  background:rgba(255,255,255,0.08);border:none;color:var(--text);
-  width:26px;height:26px;border-radius:7px;cursor:pointer;font-size:16px;
-  display:flex;align-items:center;justify-content:center;line-height:1;
-}
-.tx-card-filter-x:active{background:var(--danger);color:#fff;}
-/* TX FILTERS (category chips) */
-.tx-filters{display:flex;gap:8px;padding:0 0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+/* TX FILTERS */
+.tx-filters{display:flex;gap:8px;padding:4px 16px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 .tx-filters::-webkit-scrollbar{display:none;}
 .tf-chip{
-  padding:7px 14px;background:var(--bg3);
+  padding:7px 14px;background:rgba(14,14,14,0.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   border:1px solid var(--border2);border-radius:20px;font-size:12px;color:var(--text2);
   cursor:pointer;white-space:nowrap;transition:all 0.15s;font-family:var(--dm);font-weight:500;flex-shrink:0;
 }
@@ -954,6 +924,12 @@ body.light .aurora-bg{opacity:0.35;}
 <div class="app">
 <div class="scroll" id="scroll">
 
+  <!-- PLAYGROUND BANNER -->
+  <div style="background:#7a0e1e;color:#fff;text-align:center;padding:4px 8px;font-size:10px;font-family:var(--dm);letter-spacing:0.5px;font-weight:600;border-bottom:1px solid #c01830;display:flex;justify-content:center;align-items:center;gap:10px;">
+    🧪 PLAYGROUND — datos aislados de la app real
+    <button onclick="if(confirm('Borrar todos los datos del playground y re-cargar datos ficticios?')){window.localStorage.clear();location.reload();}" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:9px;font-weight:600;padding:2px 8px;border-radius:8px;cursor:pointer;font-family:inherit;">↺ Reset & re-seed</button>
+  </div>
+
   <!-- HEADER -->
   <div class="hdr" id="hdr">
     <div class="hdr-top">
@@ -1164,14 +1140,8 @@ body.light .aurora-bg{opacity:0.35;}
 
   <!-- TX -->
   <div class="panel" id="panel-tx">
-    <div class="tx-toolbar">
-      <div class="tx-search-row">
-        <svg class="tx-search-ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="txSearchInput" placeholder="Buscar descripción, categoría..." oninput="searchTx(this.value)">
-      </div>
-      <div id="txCardFilterBadge"></div>
-      <div class="tx-filters" id="txFilters"></div>
-    </div>
+    <div class="slbl">Movimientos</div>
+    <div class="tx-filters" id="txFilters"></div>
     <div class="tx-wrap">
       <div id="txCard"></div>
     </div>
@@ -1446,6 +1416,106 @@ body.light .aurora-bg{opacity:0.35;}
 <div class="toast" id="toast"><span class="toast-ico toast-ico-success">✓</span><span class="toast-ico toast-ico-error">✕</span><span class="toast-ico toast-ico-warn">!</span><span class="toast-ico toast-ico-info">i</span><span id="toastMsg"></span></div>
 
 <script>
+// ═══ PLAYGROUND MODE — namespacea localStorage con prefijo "pg:" ═══
+// Esto aísla los datos de playground.html para no pisar los de index.html
+(function(){
+  var PREFIX='pg:';
+  var raw=window.localStorage;
+  var shim={
+    getItem:function(k){return raw.getItem(PREFIX+k);},
+    setItem:function(k,v){return raw.setItem(PREFIX+k,v);},
+    removeItem:function(k){return raw.removeItem(PREFIX+k);},
+    clear:function(){
+      var keys=[];
+      for(var i=0;i<raw.length;i++){var k=raw.key(i);if(k&&k.indexOf(PREFIX)===0)keys.push(k);}
+      keys.forEach(function(k){raw.removeItem(k);});
+    },
+    get length(){
+      var n=0;
+      for(var i=0;i<raw.length;i++){var k=raw.key(i);if(k&&k.indexOf(PREFIX)===0)n++;}
+      return n;
+    },
+    key:function(i){
+      var c=0;
+      for(var j=0;j<raw.length;j++){
+        var k=raw.key(j);
+        if(k&&k.indexOf(PREFIX)===0){if(c===i)return k.slice(PREFIX.length);c++;}
+      }
+      return null;
+    }
+  };
+  Object.defineProperty(window,'localStorage',{value:shim,configurable:true});
+  console.log('%c[PLAYGROUND]','background:#7a0e1e;color:#fff;padding:2px 6px;border-radius:4px;','localStorage namespaced con prefijo "pg:" — datos aislados de index.html');
+})();
+
+// ═══ PLAYGROUND SEED — datos ficticios para ver la app poblada ═══
+(function(){
+  var SEED_VERSION='seed:v4';
+  if(window.localStorage.getItem(SEED_VERSION))return;
+  // Limpia cualquier seed anterior para que esta versión gane
+  window.localStorage.removeItem('seed:v1');
+  window.localStorage.removeItem('seed:v2');
+  window.localStorage.removeItem('seed:v3');
+
+  var Y=2026,M=6; // Junio 2026
+  var mkey=Y+'-'+String(M).padStart(2,'0');
+
+  // Config: ingreso, meta, presupuestos
+  window.localStorage.setItem('cfg:income',JSON.stringify(10000000));
+  window.localStorage.setItem('cfg:income:'+mkey,JSON.stringify(10000000));
+  window.localStorage.setItem('cfg:goal',JSON.stringify(50));
+  window.localStorage.setItem('cfg:currency',JSON.stringify('ARS'));
+
+  // Tarjetas con día de cierre y vencimiento
+  var paymentMethods=[
+    {value:'Visa Galicia',label:'💳 Visa Galicia',closeDay:5,dueDay:20},
+    {value:'Mastercard Gold',label:'💳 Mastercard Gold',closeDay:18,dueDay:5},
+    {value:'Mercado Pago',label:'💳 Mercado Pago',closeDay:null,dueDay:null},
+    {value:'Efectivo',label:'💵 Efectivo',closeDay:null,dueDay:null}
+  ];
+  window.localStorage.setItem('paymentMethods',JSON.stringify(paymentMethods));
+
+  // Transacciones de Junio 2026 (cada una con tarjeta)
+  var txs=[
+    {desc:'Nafta YPF',monto:45000,cat:'Transporte / nafta',date:'1/6',tarjeta:'Visa Galicia'},
+    {desc:'Subte',monto:1500,cat:'Subte',date:'1/6',tarjeta:'Mercado Pago'},
+    {desc:'McDonalds',monto:8500,cat:'Gastronomía',date:'1/6',tarjeta:'Mercado Pago'},
+    {desc:'Netflix',monto:7500,cat:'Suscripciones',date:'1/6',tarjeta:'Mastercard Gold'},
+    {desc:'Spotify',monto:4200,cat:'Suscripciones',date:'1/6',tarjeta:'Mastercard Gold'},
+    {desc:'Cargador Mercado Libre',monto:15000,cat:'Tecnología',date:'1/6',tarjeta:'Visa Galicia'},
+    {desc:'PedidosYa Sushi',monto:18500,cat:'Gastronomía',date:'2/6',tarjeta:'Mercado Pago'},
+    {desc:'Zapatillas Adidas',monto:89000,cat:'Ropa / compras online',date:'2/6',tarjeta:'Visa Galicia'},
+    {desc:'Compra USD',monto:250000,cat:'Ahorro USD',date:'2/6',currency:'ARS'},
+    {desc:'Cena restaurant',monto:35000,cat:'Gastronomía',date:'2/6',tarjeta:'Visa Galicia'},
+    {desc:'Disney+',monto:4800,cat:'Suscripciones',date:'2/6',tarjeta:'Mastercard Gold'},
+    {desc:'Café',monto:3500,cat:'Gastronomía',date:'3/6',tarjeta:'Efectivo'},
+    {desc:'Subte',monto:1500,cat:'Subte',date:'3/6',tarjeta:'Mercado Pago'},
+    {desc:'Nafta Shell',monto:50000,cat:'Transporte / nafta',date:'3/6',tarjeta:'Visa Galicia'},
+    {desc:'Cine entrada',monto:4800,cat:'Entretenimiento',date:'3/6',tarjeta:'Mastercard Gold'},
+    // Gastos de terceros (reembolsos pendientes)
+    {desc:'Campera Adidas Mamá',monto:48000,cat:'Ropa / compras online',date:'2/6',tarjeta:'Visa Galicia',tercero:{nombre:'Mamá',estado:'pendiente'}},
+    {desc:'Farmacia Mamá',monto:14000,cat:'Otro',date:'1/6',tarjeta:'Visa Galicia',tercero:{nombre:'Mamá',estado:'pendiente'}},
+    {desc:'Comida Hermana',monto:25500,cat:'Gastronomía',date:'1/6',tarjeta:'Mastercard Gold',tercero:{nombre:'Hermana',estado:'pendiente'}}
+  ].map(function(t){t.id=Math.random().toString(36).slice(2,9);t.currency=t.currency||'ARS';return t;});
+  window.localStorage.setItem('txs:'+mkey,JSON.stringify(txs));
+
+  // Lista de terceros para autocomplete
+  window.localStorage.setItem('terceros',JSON.stringify(['Mamá','Hermana','Papá']));
+
+  // Cuotas activas
+  var cuotas=[
+    {id:'q1',nombre:'Newsan TV Samsung',monto:30000,total:12,pagadas:5,inicio:'2026-02',cat:'Cuotas tarjetas',tarjeta:'Visa Galicia'},
+    {id:'q2',nombre:'Compra online Adidas',monto:25000,total:6,pagadas:2,inicio:'2026-04',cat:'Cuotas tarjetas',tarjeta:'Mastercard Gold'},
+    {id:'q3',nombre:'Notebook Bidcom',monto:80000,total:18,pagadas:1,inicio:'2026-05',cat:'Cuotas tarjetas',tarjeta:'Visa Galicia'}
+  ];
+  window.localStorage.setItem('cuotas_activas',JSON.stringify(cuotas));
+
+  window.localStorage.setItem(SEED_VERSION,'true');
+  // Reset tutorial flag para verlo de nuevo
+  window.localStorage.removeItem('tutorial:seen');
+  console.log('%c[PLAYGROUND]','background:#3d9e72;color:#fff;padding:2px 6px;border-radius:4px;','Datos ficticios cargados: 15 gastos, 3 cuotas, ingreso $10.000.000');
+})();
+
 // ═══ CONFIGURATION ═══
 const APP_CONFIG={
   user:{name:'Mateo'},
@@ -2054,7 +2124,7 @@ function renderNewCards(txsAll,totalUSD,terceros){
         var farClass=b.daysToClose>7?' far':'';
         closeBadge='<div class="bycard-close'+farClass+'">CIERRA EN '+b.daysToClose+'D</div>';
       }
-      return'<div class="bycard-item" onclick="filterByCard(\''+b.card.value.replace(/'/g,"\\\\'")+'\')"><div class="bycard-ico '+cardIcoClass(b.card.value)+'">'+cardIcoEmoji(b.card.value)+'</div><div class="bycard-body"><div class="bycard-name">'+escHTML(b.card.value)+'</div><div class="bycard-meta">'+counts.join(' + ')+' · '+modo+'</div></div><div class="bycard-r"><div class="bycard-amount">'+(hidden?'••••':fmtS(b.total))+'</div>'+closeBadge+'</div></div>';
+      return'<div class="bycard-item"><div class="bycard-ico '+cardIcoClass(b.card.value)+'">'+cardIcoEmoji(b.card.value)+'</div><div class="bycard-body"><div class="bycard-name">'+escHTML(b.card.value)+'</div><div class="bycard-meta">'+counts.join(' + ')+' · '+modo+'</div></div><div class="bycard-r"><div class="bycard-amount">'+(hidden?'••••':fmtS(b.total))+'</div>'+closeBadge+'</div></div>';
     }).join('');
     g('byCardWidget').innerHTML='<div class="bycard-card"><div class="bycard-top"><div class="bycard-title">Por tarjeta</div><div class="bycard-sub">Total de este período</div></div><div class="bycard-list">'+listHTML+'</div></div>';
   }else{
@@ -2496,33 +2566,14 @@ function renderUSDSection(){
 // ═══ RENDER: TRANSACTIONS ═══
 function filterTx(cat){activeCatFilter=cat;renderTx();}
 var txSearchQuery='';
-var activeCardFilter=null;
-function searchTx(q){txSearchQuery=(q||'').toLowerCase().trim();renderTxList();}
-function filterByCard(card){
-  activeCardFilter=card;activeCatFilter=null;txSearchQuery='';
-  showP('tx');
-}
-function clearCardFilter(){activeCardFilter=null;renderTx();}
+function searchTx(q){txSearchQuery=(q||'').toLowerCase().trim();renderTx();}
 function renderTx(){
-  // Sync controls del toolbar (input + chips + badge) — solo cuando se navega al panel
-  var allTxs=DS.getTxs(cy,cm);var filtersEl=g('txFilters');
-  var inp=g('txSearchInput');if(inp)inp.value=txSearchQuery;
+  var allTxs=DS.getTxs(cy,cm);var card=g('txCard');var filtersEl=g('txFilters');
   var catSet={};allTxs.forEach(function(t){catSet[t.cat]=1;});var cats=Object.keys(catSet);
-  filtersEl.innerHTML='<div class="tf-chip'+(!activeCatFilter?' active':'')+'" onclick="filterTx(null)">Todos</div>'+
+  filtersEl.innerHTML='<div class="tx-search"><input type="text" placeholder="\u{1F50D} Buscar..." value="'+escHTML(txSearchQuery)+'" oninput="searchTx(this.value)"></div>'+
+    '<div class="tf-chip'+(!activeCatFilter?' active':'')+'" onclick="filterTx(null)">Todos</div>'+
     cats.map(function(cat){return '<div class="tf-chip'+(activeCatFilter===cat?' active':'')+'" onclick="filterTx('+JSON.stringify(cat)+')">'+(CAT_EMOJI[cat]||'\u{1F4E6}')+' '+escHTML(cat.split('/')[0].trim())+'</div>';}).join('');
-  // Badge tarjeta activa
-  var badgeEl=g('txCardFilterBadge');
-  if(activeCardFilter){
-    var emoji=cardIcoEmoji?cardIcoEmoji(activeCardFilter):'💳';
-    badgeEl.innerHTML='<div class="tx-card-filter"><div class="tx-card-filter-ico">'+emoji+'</div><div class="tx-card-filter-lbl">'+escHTML(activeCardFilter)+'<div class="tx-card-filter-sub">Filtrado por tarjeta</div></div><button class="tx-card-filter-x" onclick="clearCardFilter()">×</button></div>';
-  }else{badgeEl.innerHTML='';}
-  renderTxList();
-}
-function renderTxList(){
-  var allTxs=DS.getTxs(cy,cm);var card=g('txCard');
-  var txs=allTxs;
-  if(activeCardFilter)txs=txs.filter(function(t){return t.tarjeta===activeCardFilter;});
-  if(activeCatFilter)txs=txs.filter(function(t){return t.cat===activeCatFilter;});
+  var txs=activeCatFilter?allTxs.filter(function(t){return t.cat===activeCatFilter;}):allTxs;
   if(txSearchQuery){txs=txs.filter(function(t){return (t.desc||'').toLowerCase().indexOf(txSearchQuery)>=0||(t.cat||'').toLowerCase().indexOf(txSearchQuery)>=0;});}
   if(!txs.length){
     var msg=txSearchQuery?'Sin resultados para "'+escHTML(txSearchQuery)+'"':(allTxs.length===0?'A\u00fan no cargaste gastos este mes':'Sin gastos en esta categor\u00eda');

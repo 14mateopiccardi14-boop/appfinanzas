@@ -7,11 +7,23 @@
   "id": "finanzas-mateo",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#080808",
+  "background_color": "#6b1019",
   "theme_color": "#080808",
   "lang": "es-AR",
   "categories": ["finance", "productivity"],
   "icons": [
+    {
+      "src": "icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
     {
       "src": "icon.png",
       "sizes": "192x192",

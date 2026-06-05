@@ -1,58 +1,84 @@
 # Dónde quedamos — App Gastos
 
-**Última sesión:** 2026-06-02
+**Última sesión:** 2026-06-05
 
 ## Estado actual
 
 ✅ Brainstorming completo
-✅ Diseño aprobado por secciones (mockup visual OK)
-✅ Spec escrito y autorrevisado → [spec aprobado](specs/2026-06-02-app-gastos-improvements-and-apk-design.md)
-✅ `playground.html` creado en la raíz — copia de `index.html` con `localStorage` namespaceado (prefijo `pg:`) para testear los cambios sin tocar datos reales
-⏳ **Esperando confirmación final del spec para arrancar implementación**
+✅ Diseño aprobado
+✅ Migración playground.html → index.html
+✅ 31/32 decisiones del spec implementadas (D17 pull-to-refresh descartado conscientemente — no aplica a app local)
+✅ Cleanup: `playground.html` eliminado, `_part*.js` / `extract.js` / `fix.js` / `temp.js` borrados
+✅ **APK funcional generado y andando en el celu del usuario** (PWA Builder + TWA)
+✅ Repo público en GitHub + GitHub Pages activo:
+   - URL pública: https://14mateopiccardi14-boop.github.io/appfinanzas/
+   - Repo: https://github.com/14mateopiccardi14-boop/appfinanzas
+✅ Hermana puede instalar vía Safari → "Agregar a pantalla de inicio"
+✅ Updates automáticos: `git push` → en 2 min llega al celu sin reinstalar
 
-## Workflow de implementación
+## Polish premium aplicado en esta sesión
 
-- Todos los cambios se hacen en **`playground.html`**, no en `index.html` (hasta que se aprueben).
-- Para tener datos realistas: exportar backup desde `index.html` e importarlo en `playground.html`.
-- Cuando una fase está aprobada al 100%, se copia `playground.html` → `index.html`.
+- **Aurora**: animado con 5 blobs → mesh gradient estático saturado (sin animaciones, sin parallax)
+- **Nav inferior**: pill grande deslizante → dot 5px iOS-18 style con glow accent
+- **Income card**: count-up 650ms del número + sheen periódico cada 7s
+- **KPIs**: 4 barras de progreso → sparklines de 6 meses con currentColor (responde al tema)
+- **Manifest**: scope, id, orientation, categories, lang agregados para TWA
+- **iOS touch icon**: apunta al maskable (sin fondo blanco)
 
-## Decisiones clave (las 19 cerradas)
+## ⚠️ PENDIENTE para la próxima sesión
 
-Ver tabla completa al final del spec. Resumen:
-- TWA (Bubblewrap) para empaquetar, no Capacitor
-- Orden: features primero, APK al final
-- 3 fases: Lógica nueva → UX/visuales → APK
-- USD separado del KPI "Gastado", card ancha verde abajo
-- Widget "Por tarjeta" usa período de facturación si hay closeDay
-- Tarjeta default por chip (hardcoded + editable en Config)
-- Paleta 24 colores + custom picker en modal
-- Iconos SVG monocromáticos en Config (no emojis)
-- **Fase 3 (APK) no se ejecuta sin OK explícito post-app**
+**El logo NO convenció al usuario.** Recorrido del logo en esta sesión:
 
-## Próximo paso cuando vuelvas
+1. Original: icon.png 2048×2048 AI-generated con emblema $AR + sol + handshake + íconos rituales sobre cuadro vino con fondo blanco
+   → Problema: Android lo mostraba con fondo blanco alrededor (no maskable)
+2. Fix v1 (commit `29b9ac8`): crop 78% del original sobre fondo vino
+   → Quedaba un margen blanco fino del anti-aliasing del borde redondeado
+3. Fix v2 (commit `b226e82`): crop 62% del original, descarta el contorno dorado
+   → Mejor pero el usuario lo sentía cargado/AI-generated
+4. **Nuevo design** (commit `97edc5e`): Sol de Mayo dorado + "$" abajo sobre vino sólido, generado con PowerShell + System.Drawing
+   → **Usuario dijo "el logo es feo"** — el design programático es demasiado plano/básico
 
-Pegale a Claude esto exactamente:
+**Caminos posibles para la próxima:**
+- Hacer un logo en Figma/Canva (más control visual que PowerShell)
+- Probar una IA generadora de íconos (Midjourney, Recraft, etc.) con prompts más curados
+- Volver al emblema AR-generated original pero procesarlo mejor (sacar el blanco, no croppear el laurel)
+- Pedirle al usuario que pase un logo de referencia que le guste
 
-> Vengo de continuar el spec de App Gastos. Está en `docs/superpowers/specs/2026-06-02-app-gastos-improvements-and-apk-design.md`. Ya lo aprobé. Avanzá con el skill `writing-plans` para armar el plan de implementación paso a paso.
+## Workflow del proyecto
 
-O alternativamente si querés cambiar algo del spec primero:
+- Branch único `main`. Commits inmediatos por feature.
+- `git push` → GitHub Pages → app del celu actualizada en ~2 min (TWA carga la URL)
+- Re-empaquetar APK solo necesario si cambia: manifest.json, sw.js mismo, íconos, package_id
+- Para cambios de UI/features/lógica → solo push, no reinstalar APK
 
-> Vengo de continuar el spec de App Gastos en `docs/superpowers/specs/2026-06-02-app-gastos-improvements-and-apk-design.md`. Quiero cambiar [lo que sea] antes de avanzar.
+## Archivos relevantes
 
-## Archivos del brainstorming
-
-- **Spec final:** `docs/superpowers/specs/2026-06-02-app-gastos-improvements-and-apk-design.md`
-- **Mockup visual del dashboard:** `.superpowers/brainstorm/809-1780438687/content/dashboard-mockup.html`
-  (carpeta `.superpowers/` ya está en `.gitignore`, no se sube al repo)
+- **App:** `index.html` (~3760 líneas, single file)
+- **Manifest:** `manifest.json` (con maskable + any icons)
+- **Service worker:** `sw.js` (network-first para HTML, cache-first para assets)
+- **Íconos actuales (a redesignar):**
+  - `icon.png` (1024×1024, purpose:any) — Sol+$ programático
+  - `icon-maskable-512.png` (purpose:maskable)
+  - `icon-maskable-192.png` (purpose:maskable)
+- **Spec:** `docs/superpowers/specs/2026-06-02-app-gastos-improvements-and-apk-design.md`
+- **Plan:** `docs/superpowers/plans/2026-06-03-app-gastos-migration-and-apk.md`
 
 ## Estado del repo
 
-- `index.html` y `icon.png` aparecen como modificados desde antes de esta sesión — no los toqué.
-- `.gitignore` modificado: agregué `.superpowers/`.
-- `docs/superpowers/specs/...md` creado nuevo (sin commitear todavía — decidí esperar tu OK).
+- Branch: `main`
+- Working tree limpio
+- Pusheado a origin/main
+- Último commit: `97edc5e` feat: nuevo icono Sol de Mayo + dólar (el que no gustó)
 
-## Pendientes técnicos para Fase 3 (cuando llegue)
+## Próximo paso al volver
 
-- Verificar si el repo es público (GitHub Pages gratis lo requiere).
-- Tener Java JDK + Android SDK instalados para Bubblewrap.
-- Alternativa más fácil: PWA Builder web (https://www.pwabuilder.com/).
+1. Decidir cómo abordar el logo (ver opciones arriba)
+2. Si el usuario tiene un logo en mente, generar maskable + 192/512 a partir de ese
+3. Push → usuario regenera APK en PWA Builder (mismos pasos de siempre)
+4. Listo, proyecto cerrado salvo features futuras
+
+## Lo que queda fuera del scope original
+
+- Pull-to-refresh (D17) — descartado conscientemente, no aplica a localStorage
+- Sincronización entre dispositivos (sería backend, no estaba en spec)
+- Publicación en Google Play (signing key actual sirve para sideload, no Play Store)

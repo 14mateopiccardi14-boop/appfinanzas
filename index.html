@@ -220,6 +220,7 @@ body{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:colum
 .kpi-sub{font-size:10px;color:var(--text2);margin-top:5px;}
 .kpi-bar{height:3px;background:var(--bg4);border-radius:2px;margin-top:10px;overflow:hidden;}
 .kpi-bar-fill{height:3px;border-radius:2px;transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1);}
+.kpi-spark{display:block;width:100%;height:26px;margin-top:8px;overflow:visible;}
 
 /* METER */
 .meter-card{
@@ -2260,6 +2261,47 @@ function renderAll(){
   renderDash();
 }
 
+// ═══ SPARKLINE (KPI history) ═══
+function kpiHistory(monthsBack){
+  monthsBack=monthsBack||6;
+  var g=[],c=[],a=[],d=[];
+  for(var i=monthsBack-1;i>=0;i--){
+    var ty=cy,tm=cm-i;
+    while(tm<0){tm+=12;ty--;}
+    var txs=realTxs(DS.getTxs(ty,tm));
+    var tot=txs.reduce(function(s,t){return s+t.monto;},0);
+    var cuo=cuotasDelMes(ty,tm);
+    var inc=income(ty,tm);
+    var prev=gastosPrevios(ty,tm);
+    g.push(tot);
+    c.push(cuo);
+    a.push(Math.max(0,inc-tot-cuo-prev));
+    d.push(Math.max(0,inc-tot-cuo));
+  }
+  return {gastado:g,cuotas:c,ahorro:a,disponible:d};
+}
+function sparkSVG(vals,color){
+  if(!vals||vals.length<2)return '';
+  var w=100,h=26,pad=2;
+  var max=Math.max.apply(null,vals);
+  var min=Math.min.apply(null,vals);
+  var range=max-min;
+  if(max===0)return '<svg class="kpi-spark" viewBox="0 0 100 26" preserveAspectRatio="none"><line x1="0" y1="'+(h-pad)+'" x2="100" y2="'+(h-pad)+'" stroke="'+color+'" stroke-width="1" stroke-opacity="0.25"/></svg>';
+  var step=w/(vals.length-1);
+  function ny(v){
+    if(range===0)return h/2;
+    return h-pad-((v-min)/range)*(h-pad*2);
+  }
+  var pts=vals.map(function(v,i){return (i*step).toFixed(1)+','+ny(v).toFixed(1);}).join(' ');
+  var lastY=ny(vals[vals.length-1]).toFixed(1);
+  var areaPts='0,'+h+' '+pts+' '+w+','+h;
+  return '<svg class="kpi-spark" viewBox="0 0 100 26" preserveAspectRatio="none" style="color:'+color+'">'+
+    '<polyline points="'+areaPts+'" fill="currentColor" fill-opacity="0.13" stroke="none"/>'+
+    '<polyline points="'+pts+'" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>'+
+    '<circle cx="100" cy="'+lastY+'" r="2" fill="currentColor"/>'+
+    '</svg>';
+}
+
 // ═══ RENDER: DASHBOARD ═══
 function renderDash(){
   var txsAll=DS.getTxs(cy,cm);
@@ -2318,30 +2360,35 @@ function renderDash(){
 
   var aC=ahorro>=goalAmt?'var(--ok)':ahorro>=0?'var(--amber)':'var(--danger)';
   var gC=gastPct>40?'var(--danger)':gastPct>25?'var(--amber)':'var(--text)';
+  var hist=kpiHistory(6);
+  var sparkGast=hidden?'':sparkSVG(hist.gastado,gC);
+  var sparkCuo=hidden?'':sparkSVG(hist.cuotas,'var(--amber)');
+  var sparkAho=hidden?'':sparkSVG(hist.ahorro,aC);
+  var sparkDisp=hidden?'':sparkSVG(hist.disponible,ahorro<0?'var(--danger)':'rgb(var(--gRGB))');
   g('kpiGrid').innerHTML=
     '<div class="kpi'+(gastPct>40?' alert':'')+'">'+
       '<div class="kpi-top"><div class="kpi-lbl">Gastado</div>'+deltaPill(dGast,true)+'</div>'+
       '<div class="kpi-val" style="color:'+gC+'">'+(hidden?'\u2022\u2022\u2022\u2022':fmtS(tot))+'</div>'+
       '<div class="kpi-sub">'+gastPct+'% del ingreso</div>'+
-      '<div class="kpi-bar"><div class="kpi-bar-fill" style="width:'+Math.min(100,gastPct)+'%;background:'+gC+';"></div></div>'+
+      sparkGast+
     '</div>'+
     '<div class="kpi">'+
       '<div class="kpi-top"><div class="kpi-lbl">Cuotas</div>'+deltaPill(dCuot,true)+'</div>'+
       '<div class="kpi-val" style="color:var(--amber)">'+(hidden?'\u2022\u2022\u2022\u2022':fmtS(cuotasMes))+'</div>'+
       '<div class="kpi-sub">'+Utils.pct(cuotasMes,inc)+'% del ingreso</div>'+
-      '<div class="kpi-bar"><div class="kpi-bar-fill" style="width:'+Utils.pct(cuotasMes,inc)+'%;background:var(--amber);"></div></div>'+
+      sparkCuo+
     '</div>'+
     '<div class="kpi'+(ahorro<0?' alert':'')+'">'+
       '<div class="kpi-top"><div class="kpi-lbl">Ahorro est.</div>'+deltaPill(dAho,false)+'</div>'+
       '<div class="kpi-val" style="color:'+aC+'">'+(hidden?'\u2022\u2022\u2022\u2022':fmtS(Math.max(0,ahorro)))+'</div>'+
       '<div class="kpi-sub">'+savPct+'% del ingreso</div>'+
-      '<div class="kpi-bar"><div class="kpi-bar-fill" style="width:'+Math.min(100,savPct)+'%;background:'+aC+';"></div></div>'+
+      sparkAho+
     '</div>'+
     '<div class="kpi">'+
       '<div class="kpi-top"><div class="kpi-lbl">Disponible</div>'+deltaPill(dDisp,false)+'</div>'+
       '<div class="kpi-val" style="color:'+(ahorro<0?'var(--danger)':'var(--text)')+'">'+(hidden?'\u2022\u2022\u2022\u2022':fmtS(Math.max(0,inc-tot-cuotasMes)))+'</div>'+
       '<div class="kpi-sub">Hasta cobrar</div>'+
-      '<div class="kpi-bar"><div class="kpi-bar-fill" style="width:'+Utils.pct(Math.max(0,inc-tot-cuotasMes),inc)+'%;background:var(--g3);"></div></div>'+
+      sparkDisp+
     '</div>';
 
   // METER

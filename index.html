@@ -111,14 +111,14 @@ body{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:colum
 
 /* HEADER */
 .hdr{
-  padding:18px 20px 14px;position:sticky;top:0;z-index:100;
+  padding:14px 20px 16px;position:sticky;top:0;z-index:100;
   background:rgba(6,6,6,0.84);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
 }
 .hdr::after{
   content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
   background:linear-gradient(90deg,transparent 5%,rgba(var(--gRGB),0.35) 40%,rgba(var(--gRGB),0.35) 60%,transparent 95%);
 }
-.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .hdr-greet{font-size:12px;color:var(--text2);font-weight:400;letter-spacing:0.01em;}
 .hdr-greet strong{color:var(--text);font-weight:600;}
 .hdr-date-pill{
@@ -128,8 +128,10 @@ body{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:colum
   font-size:10px;font-family:var(--outfit);font-weight:700;color:var(--g4);
   letter-spacing:0.07em;text-transform:uppercase;
   box-shadow:0 0 14px rgba(var(--gRGB),0.18),inset 0 0 8px rgba(var(--gRGB),0.06);
+  cursor:pointer;transition:all 0.18s;
 }
-.hdr-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.hdr-date-pill:active{transform:scale(0.95);background:rgba(var(--gRGB),0.18);}
+.hdr-nav{display:flex;align-items:center;justify-content:space-between;gap:14px;}
 .hdr-arrow{
   width:36px;height:36px;border-radius:50%;
   border:1px solid rgba(255,255,255,0.1);
@@ -140,22 +142,53 @@ body{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:colum
 }
 .hdr-arrow:active{background:var(--g3);border-color:rgba(var(--gRGB),0.7);color:#fff;box-shadow:0 0 18px rgba(var(--gRGB),0.45);}
 .hdr-arrow svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
-.hdr-center{text-align:center;flex:1;}
+.hdr-ring-wrap{
+  position:relative;width:122px;height:122px;flex:1;max-width:122px;margin:0 auto;
+  display:flex;align-items:center;justify-content:center;
+}
+.hdr-ring-wrap::before{
+  content:'';position:absolute;inset:14px;border-radius:50%;
+  background:radial-gradient(circle,rgba(var(--gRGB),0.13) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hdr-ring{
+  position:absolute;inset:0;width:100%;height:100%;
+  transform:rotate(-90deg);
+}
+.hdr-ring-bg{
+  fill:none;stroke:rgba(255,255,255,0.07);stroke-width:2.5;
+}
+.hdr-ring-fill{
+  fill:none;stroke:rgba(var(--gRGB),0.95);stroke-width:3.5;
+  stroke-linecap:round;
+  stroke-dasharray:326.73;stroke-dashoffset:326.73;
+  transition:stroke-dashoffset 1s cubic-bezier(0.34,1.56,0.64,1),stroke 0.4s;
+  filter:drop-shadow(0 0 6px rgba(var(--gRGB),0.6)) drop-shadow(0 0 14px rgba(var(--gRGB),0.25));
+}
+.hdr-ring-tick{
+  fill:rgba(var(--gRGB),1);
+  filter:drop-shadow(0 0 4px rgba(var(--gRGB),0.9));
+}
+.hdr-ring-inner{
+  text-align:center;z-index:2;position:relative;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+}
 .hdr-month{
-  font-family:var(--outfit);font-size:30px;font-weight:800;color:var(--text);
-  letter-spacing:-1px;line-height:1;
-  text-shadow:0 0 48px rgba(192,24,48,0.35),0 2px 12px rgba(0,0,0,0.4);
+  font-family:var(--outfit);font-size:22px;font-weight:800;color:var(--text);
+  letter-spacing:-0.5px;line-height:1;text-transform:uppercase;
+  text-shadow:0 0 30px rgba(192,24,48,0.5),0 2px 10px rgba(0,0,0,0.5);
 }
-.hdr-month-sub{font-size:11px;color:var(--text2);margin-top:5px;letter-spacing:0.01em;}
-.hdr-prog-track{height:3px;background:rgba(255,255,255,0.05);border-radius:3px;}
-.hdr-swipe-hint{display:flex;justify-content:center;gap:4px;padding-top:10px;}
-.hdr-swipe-dot{width:4px;height:4px;border-radius:50%;background:var(--text3);transition:background 0.2s;}
-.hdr-swipe-dot.mid{background:var(--g3);width:12px;border-radius:2px;}
-.hdr-prog-fill{
-  height:3px;border-radius:3px;background:linear-gradient(90deg,var(--g2),var(--g4));
-  transition:width 0.9s cubic-bezier(0.34,1.56,0.64,1);width:0%;
-  box-shadow:0 0 10px rgba(192,24,48,0.7),0 0 22px rgba(var(--gRGB),0.3);
+.hdr-year{
+  font-family:var(--outfit);font-size:10px;font-weight:700;color:var(--text2);
+  letter-spacing:0.18em;
 }
+.hdr-day-stat{
+  font-size:9px;color:var(--g4);font-family:var(--outfit);font-weight:700;
+  letter-spacing:0.1em;margin-top:2px;
+  padding:2px 7px;border-radius:8px;
+  background:rgba(var(--gRGB),0.13);border:1px solid rgba(var(--gRGB),0.25);
+}
+.hdr-day-stat.closed{color:var(--text3);background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08);}
 
 /* SECTION LABEL */
 .slbl{
@@ -1158,27 +1191,27 @@ body.theme-paper .aurora-bg,body.light .aurora-bg{opacity:0.18;}
   <div class="hdr" id="hdr">
     <div class="hdr-top">
       <div class="hdr-greet" id="greet">Buenos días</div>
-      <div class="hdr-date-pill" id="hdrDatePill">—</div>
+      <div class="hdr-date-pill" id="hdrDatePill" onclick="goToday()">—</div>
     </div>
     <div class="hdr-nav">
       <button class="hdr-arrow" onclick="prevM()">
         <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
-      <div class="hdr-center">
-        <div class="hdr-month" id="hdrMonth">—</div>
-        <div class="hdr-month-sub" id="hdrSub">—</div>
+      <div class="hdr-ring-wrap">
+        <svg class="hdr-ring" viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="52" class="hdr-ring-bg"/>
+          <circle cx="60" cy="60" r="52" class="hdr-ring-fill" id="hdrRing"/>
+          <circle r="2.5" class="hdr-ring-tick" id="hdrRingTick" cx="60" cy="8" style="display:none;"/>
+        </svg>
+        <div class="hdr-ring-inner">
+          <div class="hdr-month" id="hdrMonth">—</div>
+          <div class="hdr-year" id="hdrYear">—</div>
+          <div class="hdr-day-stat" id="hdrSub">—</div>
+        </div>
       </div>
       <button class="hdr-arrow" onclick="nextM()">
         <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
-    </div>
-    <div class="hdr-prog-track">
-      <div class="hdr-prog-fill" id="hdrProgFill"></div>
-    </div>
-    <div class="hdr-swipe-hint">
-      <div class="hdr-swipe-dot"></div>
-      <div class="hdr-swipe-dot mid"></div>
-      <div class="hdr-swipe-dot"></div>
     </div>
   </div>
 
@@ -1979,6 +2012,10 @@ function realTxs(txs){
   });
 }
 function realTotal(txs){return realTxs(txs).reduce(function(s,t){return s+t.monto;},0);}
+function usdMes(y,m){
+  return DS.getTxs(y,m).filter(function(t){return t.cat==='Ahorro USD';})
+    .reduce(function(s,t){return s+t.monto;},0);
+}
 function getTerceros(txs){
   var pending=txs.filter(function(t){return t.tercero&&t.tercero.estado==='pendiente';});
   var byPerson={};
@@ -2244,15 +2281,32 @@ function renderAll(){
   var dim=Utils.dim(cy,cm);
 
   g('greet').innerHTML=L.greeting(now.getHours())+', <strong>'+escHTML(userName())+'</strong>';
-  g('hdrMonth').textContent=L.months[cm]+' '+cy;
+  g('hdrMonth').textContent=L.months[cm];
+  g('hdrYear').textContent=cy;
   var isPast=cy<now.getFullYear()||(cy===now.getFullYear()&&cm<now.getMonth());
   g('hdrDatePill').textContent=isCur?now.getDate()+' '+L.monthsS[cm]:isPast?'Cerrado':'Pr\u00f3ximo';
-  if(isCur){g('hdrSub').textContent='Mes en curso \u00b7 D\u00eda '+now.getDate()+' de '+dim;}
-  else{g('hdrSub').innerHTML='Mes cerrado &nbsp;<button onclick="goToday()" style="background:var(--gL);border:1px solid var(--g3);border-radius:10px;padding:2px 9px;font-size:10px;color:var(--g4);font-family:var(--dm);font-weight:600;cursor:pointer;">\u21a9 Hoy</button>';}
 
-  var prog=g('hdrProgFill');
-  if(isCur){prog.style.width=Utils.pct(now.getDate(),dim)+'%';prog.style.background='var(--g3)';}
-  else{prog.style.width='100%';prog.style.background='var(--text3)';}
+  var sub=g('hdrSub');
+  if(isCur){sub.textContent='D\u00cdA '+now.getDate()+'/'+dim;sub.className='hdr-day-stat';}
+  else{sub.textContent=isPast?'CERRADO':'PR\u00d3XIMO';sub.className='hdr-day-stat closed';}
+
+  // Ring progress
+  var ring=g('hdrRing');var tick=g('hdrRingTick');
+  var circ=326.73; // 2\u03c0*52
+  if(isCur){
+    var pct=now.getDate()/dim;
+    ring.style.strokeDashoffset=circ*(1-pct);
+    ring.style.stroke='rgba(var(--gRGB),0.95)';
+    // posiciona el tick (cabeza del progreso): SVG rotado -90deg => start visual = TOP
+    var ang=pct*2*Math.PI;
+    tick.setAttribute('cx',(60+52*Math.cos(ang)).toFixed(2));
+    tick.setAttribute('cy',(60+52*Math.sin(ang)).toFixed(2));
+    tick.style.display='';
+  }else{
+    ring.style.strokeDashoffset=isPast?0:circ;
+    ring.style.stroke=isPast?'rgba(255,255,255,0.22)':'rgba(var(--gRGB),0.3)';
+    tick.style.display='none';
+  }
 
   g('incMonthLabel').textContent='Ingreso de '+L.months[cm];
   var exC=getExtras(cy,cm).length;
@@ -2273,10 +2327,11 @@ function kpiHistory(monthsBack){
     var cuo=cuotasDelMes(ty,tm);
     var inc=income(ty,tm);
     var prev=gastosPrevios(ty,tm);
+    var usd=usdMes(ty,tm);
     g.push(tot);
     c.push(cuo);
-    a.push(Math.max(0,inc-tot-cuo-prev));
-    d.push(Math.max(0,inc-tot-cuo));
+    a.push(Math.max(0,inc-tot-cuo-prev-usd));
+    d.push(Math.max(0,inc-tot-cuo-usd));
   }
   return {gastado:g,cuotas:c,ahorro:a,disponible:d};
 }
@@ -2318,7 +2373,9 @@ function renderDash(){
   var grouped=Utils.groupByCat(txs);var byCat=grouped.byCat;var tot=grouped.total;
   var cuotasMes=cuotasDelMes(cy,cm);
   var previo=gastosPrevios(cy,cm);
-  var ahorro=inc-tot-cuotasMes-previo;
+  var usdARS=totalUSD;
+  var ahorro=inc-tot-cuotasMes-previo-usdARS;
+  var disponible=inc-tot-cuotasMes-usdARS;
   var goalAmt=inc*goal()/100;
   var savPct=Utils.pct(Math.max(0,ahorro),inc);
   var gastPct=Utils.pct(tot,inc);
@@ -2329,8 +2386,9 @@ function renderDash(){
   var prevTot=prevTxs.reduce(function(s,t){return s+t.monto;},0);
   var prevCuotas=cuotasDelMes(py,pm);
   var prevInc=income(py,pm);
-  var prevAhorro=prevInc-prevTot-prevCuotas-gastosPrevios(py,pm);
-  var prevDisp=prevInc-prevTot-prevCuotas;
+  var prevUsd=usdMes(py,pm);
+  var prevAhorro=prevInc-prevTot-prevCuotas-gastosPrevios(py,pm)-prevUsd;
+  var prevDisp=prevInc-prevTot-prevCuotas-prevUsd;
   function delta(cur,prev){
     if(!prev||prev===0)return null;
     return Math.round((cur-prev)/Math.abs(prev)*100);
@@ -2346,7 +2404,7 @@ function renderDash(){
   var dGast=delta(tot,prevTot);
   var dCuot=delta(cuotasMes,prevCuotas);
   var dAho=delta(Math.max(0,ahorro),Math.max(0,prevAhorro));
-  var dDisp=delta(Math.max(0,inc-tot-cuotasMes),Math.max(0,prevDisp));
+  var dDisp=delta(Math.max(0,disponible),Math.max(0,prevDisp));
 
   var incEl=g('incDisp');
   if(hidden){incEl.textContent='\u2022\u2022\u2022\u2022\u2022\u2022';incEl.dataset.prev='';}
@@ -2386,7 +2444,7 @@ function renderDash(){
     '</div>'+
     '<div class="kpi">'+
       '<div class="kpi-top"><div class="kpi-lbl">Disponible</div>'+deltaPill(dDisp,false)+'</div>'+
-      '<div class="kpi-val" style="color:'+(ahorro<0?'var(--danger)':'var(--text)')+'">'+(hidden?'\u2022\u2022\u2022\u2022':fmtS(Math.max(0,inc-tot-cuotasMes)))+'</div>'+
+      '<div class="kpi-val" style="color:'+(disponible<0?'var(--danger)':'var(--text)')+'">'+(hidden?'\u2022\u2022\u2022\u2022':fmtS(Math.max(0,disponible)))+'</div>'+
       '<div class="kpi-sub">Hasta cobrar</div>'+
       sparkDisp+
     '</div>';
@@ -2791,7 +2849,7 @@ function shareSummary(){
   var txs=txsAll.filter(function(t){return t.cat!=='Ahorro USD'&&!(t.tercero&&t.tercero.estado==='pendiente');});
   var tot=txs.reduce(function(s,t){return s+t.monto;},0);
   var cuotas=cuotasDelMes(cy,cm);
-  var ahorro=inc-tot-cuotas-gastosPrevios(cy,cm);
+  var ahorro=inc-tot-cuotas-gastosPrevios(cy,cm)-usdMes(cy,cm);
   var mes=L.months[cm]+' '+cy;
   var txt='💰 Resumen '+mes+'\n\n'+
     '💵 Ingreso: '+fmtS(inc)+'\n'+
@@ -2835,7 +2893,7 @@ function renderYearly(){
   var months=[];var maxTotal=1;
   for(var m=0;m<12;m++){
     var txs=DS.getTxs(cy,m);
-    var tot=realTotal(txs)+cuotasDelMes(cy,m)+gastosPrevios(cy,m);
+    var tot=realTotal(txs)+cuotasDelMes(cy,m)+gastosPrevios(cy,m)+usdMes(cy,m);
     var isCurM=now.getFullYear()===cy&&now.getMonth()===m;
     var isFuture=cy>now.getFullYear()||(cy===now.getFullYear()&&m>now.getMonth());
     months.push({m:m,total:tot,isCur:isCurM,isFuture:isFuture,hasData:txs.length>0});
@@ -2861,14 +2919,15 @@ function renderBalance(){
   var txs=realTxs(DS.getTxs(cy,cm));var inc=income();
   var tot=txs.reduce(function(s,t){return s+t.monto;},0);
   var cuotasMes=cuotasDelMes(cy,cm);var previo=gastosPrevios(cy,cm);
-  var disp=inc-tot-cuotasMes-previo;
-  var usedPct=Utils.pct(tot+cuotasMes+previo,inc);
+  var usd=usdMes(cy,cm);
+  var disp=inc-tot-cuotasMes-previo-usd;
+  var usedPct=Utils.pct(tot+cuotasMes+previo+usd,inc);
   var color=disp>inc*0.3?'var(--ok)':disp>inc*0.1?'var(--amber)':'var(--danger)';
   var glow=color==='var(--ok)'?'rgba(61,158,114,0.6)':color==='var(--amber)'?'rgba(200,122,10,0.6)':'rgba(212,78,78,0.6)';
   el.innerHTML=
     '<div class="bb-lbl">Disponible este mes</div>'+
     '<div class="bb-row"><div class="bb-amount" style="color:'+color+'">'+(hidden?'\u2022\u2022\u2022\u2022\u2022\u2022':fmt(Math.max(0,disp)))+'</div></div>'+
-    '<div class="bb-sub">'+(hidden?'':'Gastaste '+fmtS(tot+cuotasMes)+' de '+fmtS(inc)+' \u00b7 '+usedPct+'% usado')+'</div>'+
+    '<div class="bb-sub">'+(hidden?'':'Gastaste '+fmtS(tot+cuotasMes+usd)+' de '+fmtS(inc)+' \u00b7 '+usedPct+'% usado')+'</div>'+
     '<div class="bb-track"><div class="bb-fill" style="width:'+usedPct+'%;background:'+color+';box-shadow:0 0 8px '+glow+';"></div></div>';
 }
 
@@ -2905,7 +2964,7 @@ function renderAnalysis(){
   var months=[];
   for(var i=3;i>=0;i--){
     var y=cy,m=cm-i;if(m<0){m+=12;y--;}
-    var t=realTotal(DS.getTxs(y,m))+cuotasDelMes(y,m)+gastosPrevios(y,m);
+    var t=realTotal(DS.getTxs(y,m))+cuotasDelMes(y,m)+gastosPrevios(y,m)+usdMes(y,m);
     months.push({label:MO[m]+' '+y,total:t,isCur:i===0});
   }
   var maxM=Math.max.apply(null,months.map(function(m){return m.total;}).concat([1]));
@@ -3049,7 +3108,7 @@ function anQuarterly(){
     var y=cy,m=cm-i;if(m<0){m+=12;y--;}
     var inc=income(y,m);var txs=realTxs(DS.getTxs(y,m));
     var tot=txs.reduce(function(s,t){return s+t.monto;},0);
-    var saving=inc-tot-cuotasDelMes(y,m)-gastosPrevios(y,m);
+    var saving=inc-tot-cuotasDelMes(y,m)-gastosPrevios(y,m)-usdMes(y,m);
     var savPct=Utils.pct(Math.max(0,saving),inc||1);
     months.push({label:L.monthsS[m],saving:saving,savPct:savPct,isCur:i===0});
   }

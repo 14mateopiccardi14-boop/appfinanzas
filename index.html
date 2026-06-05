@@ -175,10 +175,20 @@ body{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:colum
 .income-card::before{
   content:'';position:absolute;top:-50px;right:-50px;
   width:140px;height:140px;background:rgba(255,255,255,0.04);border-radius:50%;
+  z-index:0;
 }
+/* Sheen shimmer — cruza la card cada ~7s */
 .income-card::after{
-  content:'';position:absolute;bottom:-40px;left:40px;
-  width:100px;height:100px;background:rgba(0,0,0,0.15);border-radius:50%;
+  content:'';position:absolute;top:0;left:-40%;width:40%;height:100%;
+  background:linear-gradient(100deg,transparent 0%,rgba(255,255,255,0.14) 50%,transparent 100%);
+  animation:incomeSheen 7s ease-in-out infinite;
+  pointer-events:none;z-index:0;
+}
+@keyframes incomeSheen{
+  0%,30%{transform:translateX(0);opacity:0;}
+  35%{opacity:1;}
+  85%{transform:translateX(350%);opacity:1;}
+  100%{transform:translateX(350%);opacity:0;}
 }
 .ic-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;position:relative;z-index:1;}
 .ic-lbl{font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:0.08em;text-transform:uppercase;font-weight:500;}
@@ -2296,7 +2306,15 @@ function renderDash(){
   var dAho=delta(Math.max(0,ahorro),Math.max(0,prevAhorro));
   var dDisp=delta(Math.max(0,inc-tot-cuotasMes),Math.max(0,prevDisp));
 
-  g('incDisp').textContent=hidden?'\u2022\u2022\u2022\u2022\u2022\u2022':fmt(inc);
+  var incEl=g('incDisp');
+  if(hidden){incEl.textContent='\u2022\u2022\u2022\u2022\u2022\u2022';incEl.dataset.prev='';}
+  else{
+    var prev=parseFloat(incEl.dataset.prev||'NaN');
+    var from=isNaN(prev)?0:prev;
+    if(from!==inc)animateNumber(incEl,from,inc,650,fmt);
+    else incEl.textContent=fmt(inc);
+    incEl.dataset.prev=String(inc);
+  }
 
   var aC=ahorro>=goalAmt?'var(--ok)':ahorro>=0?'var(--amber)':'var(--danger)';
   var gC=gastPct>40?'var(--danger)':gastPct>25?'var(--amber)':'var(--text)';

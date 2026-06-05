@@ -37,77 +37,16 @@ body{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:colum
 .inc-total-val,.hm-cell{font-variant-numeric:tabular-nums;font-feature-settings:'tnum';}
 
 /* AURORA */
-.aurora-bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:var(--bg);}
-.ab{position:absolute;border-radius:50%;filter:blur(70px);will-change:transform,opacity;}
-.ab1{
-  width:440px;height:340px;
-  background:radial-gradient(ellipse,rgba(var(--gRGB),0.50) 0%,transparent 70%);
-  top:-90px;left:-70px;
-  animation:ab1 18s ease-in-out infinite;
-}
-.ab2{
-  width:360px;height:360px;
-  background:radial-gradient(ellipse,rgba(var(--gDarkRGB),0.45) 0%,transparent 70%);
-  top:28%;right:-90px;
-  animation:ab2 22s ease-in-out infinite;
-}
-.ab3{
-  width:480px;height:280px;
-  background:radial-gradient(ellipse,rgba(var(--gDarkRGB),0.40) 0%,transparent 70%);
-  bottom:22%;left:-120px;
-  animation:ab3 26s ease-in-out infinite;
-}
-.ab4{
-  width:320px;height:320px;
-  background:radial-gradient(ellipse,rgba(var(--gRGB),0.38) 0%,transparent 70%);
-  bottom:-90px;right:-10px;
-  animation:ab4 20s ease-in-out infinite;
-}
-.ab5{
-  width:260px;height:240px;
-  background:radial-gradient(ellipse,rgba(var(--gRGB),0.42) 0%,transparent 70%);
-  top:48%;left:22%;
-  animation:ab5 16s ease-in-out infinite;
-}
-/* Capa extra de "respiración" — gradient mesh sutil que se mueve más lento */
-.ab-mesh{
-  position:absolute;inset:-30%;
+/* Mesh gradient estático — saturado, sin animación, vivo */
+.aurora-bg{
+  position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
   background:
-    radial-gradient(ellipse 60% 40% at 20% 20%,rgba(var(--gRGB),0.10),transparent 50%),
-    radial-gradient(ellipse 50% 50% at 80% 50%,rgba(var(--gDarkRGB),0.10),transparent 50%),
-    radial-gradient(ellipse 40% 30% at 50% 90%,rgba(var(--gRGB),0.08),transparent 50%);
-  animation:meshFloat 45s ease-in-out infinite;
-  filter:blur(40px);pointer-events:none;
-}
-@keyframes meshFloat{
-  0%,100%{transform:translate(0,0) rotate(0deg) scale(1);}
-  33%{transform:translate(4%,-2%) rotate(2deg) scale(1.05);}
-  66%{transform:translate(-3%,3%) rotate(-1deg) scale(0.97);}
-}
-body.theme-paper .ab,body.light .ab{mix-blend-mode:multiply;filter:blur(70px);}
-@keyframes ab1{
-  0%,100%{transform:translate(0,0) scale(1);opacity:.55;}
-  30%{transform:translate(60px,75px) scale(1.18);opacity:.75;}
-  65%{transform:translate(-25px,40px) scale(.92);opacity:.45;}
-}
-@keyframes ab2{
-  0%,100%{transform:translate(0,0) scale(1);opacity:.5;}
-  45%{transform:translate(-75px,-60px) scale(1.22);opacity:.7;}
-  75%{transform:translate(-20px,35px) scale(.94);opacity:.4;}
-}
-@keyframes ab3{
-  0%,100%{transform:translate(0,0) scale(1);opacity:.45;}
-  35%{transform:translate(90px,-40px) scale(1.15);opacity:.65;}
-  70%{transform:translate(40px,25px) scale(.9);opacity:.35;}
-}
-@keyframes ab4{
-  0%,100%{transform:translate(0,0) scale(1);opacity:.42;}
-  55%{transform:translate(-60px,-75px) scale(1.25);opacity:.6;}
-}
-@keyframes ab5{
-  0%,100%{transform:translate(0,0) scale(1);opacity:.4;}
-  40%{transform:translate(50px,-55px) scale(1.15);opacity:.6;}
-  80%{transform:translate(-35px,25px) scale(.92);opacity:.32;}
+    radial-gradient(ellipse 75% 55% at 12% 8%, rgba(var(--gRGB),0.58), transparent 62%),
+    radial-gradient(ellipse 65% 65% at 88% 22%, rgba(var(--gDarkRGB),0.52), transparent 60%),
+    radial-gradient(ellipse 90% 50% at 50% 55%, rgba(var(--gRGB),0.32), transparent 65%),
+    radial-gradient(ellipse 70% 60% at 18% 88%, rgba(var(--gDarkRGB),0.46), transparent 62%),
+    radial-gradient(ellipse 60% 55% at 92% 92%, rgba(var(--gRGB),0.48), transparent 60%),
+    var(--bg);
 }
 
 .app{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:1;}
@@ -140,18 +79,15 @@ body.theme-paper .ab,body.light .ab{mix-blend-mode:multiply;filter:blur(70px);}
 @media (max-width:360px){.nb{font-size:0;}.nb svg{width:21px;height:21px;}}
 .nb.active{color:#fff;}
 .nb.active svg{transform:translateY(-1px) scale(1.05);}
-/* Pill indicador que se desliza entre tabs */
+/* Dot indicator iOS-18 — se desliza al tab activo */
 .nav-pill{
-  position:absolute;top:6px;height:calc(100% - 14px - env(safe-area-inset-bottom,0));
-  background:linear-gradient(180deg,var(--g4),var(--g2));
-  border:1px solid rgba(var(--gRGB),0.4);
-  border-radius:12px;z-index:1;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.18) inset,
-    0 -1px 0 rgba(0,0,0,0.25) inset,
-    0 4px 14px rgba(var(--gRGB),0.4);
-  transition:left 0.32s cubic-bezier(0.22,1,0.36,1),width 0.32s cubic-bezier(0.22,1,0.36,1),background 0.3s;
-  pointer-events:none;
+  position:absolute;
+  width:5px;height:5px;border-radius:50%;
+  background:var(--g4);
+  bottom:calc(env(safe-area-inset-bottom,0) + 4px);
+  box-shadow:0 0 10px rgba(var(--gRGB),0.85),0 0 18px rgba(var(--gRGB),0.4);
+  transition:left 0.36s cubic-bezier(0.22,1,0.36,1);
+  pointer-events:none;z-index:1;
 }
 
 /* PANELS */
@@ -1203,14 +1139,7 @@ body.theme-paper .aurora-bg,body.light .aurora-bg{opacity:0.18;}
 </style>
 </head>
 <body>
-<div class="aurora-bg" aria-hidden="true">
-  <div class="ab-mesh"></div>
-  <div class="ab ab1"></div>
-  <div class="ab ab2"></div>
-  <div class="ab ab3"></div>
-  <div class="ab ab4"></div>
-  <div class="ab ab5"></div>
-</div>
+<div class="aurora-bg" aria-hidden="true"></div>
 <div class="app">
 <div class="scroll" id="scroll">
 
@@ -2243,8 +2172,8 @@ function positionNavPill(panelId){
   var nav=btn.parentElement;
   var btnRect=btn.getBoundingClientRect();
   var navRect=nav.getBoundingClientRect();
-  pill.style.left=(btnRect.left-navRect.left)+'px';
-  pill.style.width=btnRect.width+'px';
+  // Centrar el dot (5px) bajo el icono activo
+  pill.style.left=(btnRect.left-navRect.left+btnRect.width/2-2.5)+'px';
 }
 window.addEventListener('resize',function(){
   // Re-posicionar pill al cambiar tamaño
@@ -3730,24 +3659,6 @@ setTimeout(function(){positionNavPill('dash');},100);
   var t=localStorage.getItem('theme');
   if(!t&&localStorage.getItem('lightMode')==='true'){t='paper';localStorage.setItem('theme','paper');localStorage.removeItem('lightMode');}
   applyTheme(t||'aurora');
-})();
-
-// ═══ SCROLL PARALLAX — aurora se mueve con el scroll ═══
-(function(){
-  var scrollEl=g('scroll');
-  var aurora=document.querySelector('.aurora-bg');
-  if(!scrollEl||!aurora)return;
-  var rafId=null;var lastTop=0;
-  function update(){
-    rafId=null;
-    var t=lastTop;
-    // Mover el aurora más lento que el scroll (efecto parallax)
-    aurora.style.transform='translate3d(0,'+(-t*0.35)+'px,0)';
-  }
-  scrollEl.addEventListener('scroll',function(){
-    lastTop=scrollEl.scrollTop;
-    if(!rafId)rafId=requestAnimationFrame(update);
-  },{passive:true});
 })();
 
 // ═══ SWIPE NAVIGATION ═══

@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "io.github.app_14mateopiccardi14_boop.twa",
+    "sha256_cert_fingerprints": ["72:EF:87:2A:F6:A6:82:27:13:12:C9:97:BD:C7:29:B2:A8:B4:7B:BB:E7:4A:EC:40:C7:A7:15:A6:FF:AA:75:E1"]
+  }
+}]

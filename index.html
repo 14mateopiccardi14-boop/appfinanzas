@@ -3493,9 +3493,11 @@ function doInterpret(){
   if(!gastos.length){ib.innerHTML='<span style="color:var(--amber);font-size:13px;">No detect\u00e9 montos. Intent\u00e1: "nafta 15000, comida 8500"</span>';ib.classList.add('show');return;}
   pendingTxs=gastos;
   ib.innerHTML='<div class="ib-hdr">Detect\u00e9 estos gastos:</div>'+gastos.map(function(gs){
-    var val=gs.currency==='USD'
-      ?'US$'+gs.monto+' <span style="font-size:11px;color:var(--text2);font-weight:500;">\u2248 '+fmt(gs.monto*usdRate(),false)+'</span>'
-      :fmt(gs.monto,false,gs.currency);
+    var val=fmt(gs.monto,false,gs.currency);
+    if(gs.currency==='USD'){
+      var p=usdParts(gs.monto);
+      val='US$'+p.usd+' <span style="font-size:11px;color:var(--text2);font-weight:500;">\u2248 '+fmt(p.monto,false)+'</span>';
+    }
     return '<div class="ib-row"><div class="ib-cat"><div class="ib-dot" style="background:'+(CAT_COLORS[gs.cat]||'#555')+'"></div><span>'+escHTML(gs.desc)+'</span><span style="font-size:10px;color:var(--text3);margin-left:4px;">'+escHTML(gs.cat)+'</span></div><div class="ib-val">'+val+'</div></div>';
   }).join('')+'<div style="margin-top:10px;font-size:12px;color:var(--text2);">Toc\u00e1 Registrar para confirmar.</div>';
   ib.classList.add('show');
@@ -3517,10 +3519,10 @@ function addTx(){
   if(tarjeta)extra.tarjeta=tarjeta;
   if(esTercero&&terceroNombre)extra.tercero={nombre:terceroNombre,estado:'pendiente'};
 
-  // Si la moneda es USD, el monto tipeado son d\u00f3lares: guardamos usd y convertimos a ARS
+  // USD: el monto tipeado pueden ser d\u00f3lares o pesos \u2014 usdParts() decide y guarda ambos
   function buildTx(desc,montoTyped,cat,currency){
     var t=Object.assign({id:Utils.genId(),desc:desc,monto:montoTyped,cat:cat,date:ds,currency:currency||'ARS'},extra);
-    if(currency==='USD'){t.usd=montoTyped;t.monto=Math.round(montoTyped*usdRate());}
+    if(currency==='USD'){var p=usdParts(montoTyped);t.usd=p.usd;t.monto=p.monto;}
     return t;
   }
   if(manualMode){
@@ -4014,8 +4016,42 @@ function migrateUSDTxs(){
   }
 }
 
+// ═══ FIX MIGRACIÓN USD (one-time) ═══
+// La migración asumió que el monto tipeado eran dólares, pero las compras viejas
+// estaban cargadas en pesos → quedaron infladas (pesos × cotización).
+// Heurística: nadie compra US$3000+ de un saque — si usd >= 3000, eran pesos.
+function fixUSDMigration(){
+  if(cfg('usdFix2',false))return;
+  var fixed=0;
+  Object.keys(localStorage).forEach(function(k){
+    if(k.indexOf('txs:')!==0)return;
+    try{
+      var txs=JSON.parse(localStorage.getItem(k))||[];var changed=false;
+      txs.forEach(function(t){
+        if(t.usd&&t.usd>=3000){t.monto=Math.round(t.usd);t.usd=Math.round(t.monto/usdRate());changed=true;fixed++;}
+      });
+      if(changed)localStorage.setItem(k,JSON.stringify(txs));
+    }catch(e){}
+  });
+  setCfg('usdFix2',true);
+  if(fixed){
+    DS.drop();
+    setTimeout(function(){
+      toast(fixed+' compra'+(fixed===1?'':'s')+' USD corregida'+(fixed===1?'':'s')+' (eran pesos)','success');
+    },800);
+  }
+}
+
+// Interpreta el monto tipeado en una compra USD: >= 3000 son pesos, < 3000 son dólares
+function usdParts(typed){
+  var rate=usdRate();
+  if(typed>=3000)return{monto:Math.round(typed),usd:Math.round(typed/rate)};
+  return{usd:Math.round(typed),monto:Math.round(typed*rate)};
+}
+
 // ═══ INIT ═══
 migrateUSDTxs();
+fixUSDMigration();
 applyCats();
 populateCatSelects();
 applyRecurrings();

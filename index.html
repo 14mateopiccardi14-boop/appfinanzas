@@ -1078,6 +1078,15 @@ body.theme-paper .aurora-bg,body.light .aurora-bg{opacity:0.18;}
 .toast.info .toast-ico-info{display:flex;background:var(--blue);}
 /* fallback: dot legacy hidden */
 .toast-dot{display:none;}
+.toast.has-action{pointer-events:auto;}
+.toast-action{
+  background:rgba(255,255,255,0.1);border:1px solid var(--border3);
+  color:var(--g5);font-family:var(--dm);font-size:12px;font-weight:700;
+  padding:5px 11px;border-radius:9px;cursor:pointer;margin-left:4px;
+  letter-spacing:0.2px;white-space:nowrap;flex-shrink:0;display:none;
+}
+.toast.has-action .toast-action{display:inline-block;}
+.toast-action:active{transform:scale(0.95);background:rgba(255,255,255,0.18);}
 
 /* QUICK CAT */
 .btn-cat-add{
@@ -1760,7 +1769,7 @@ body.theme-paper .aurora-bg,body.light .aurora-bg{opacity:0.18;}
   </div>
 </div>
 
-<div class="toast" id="toast"><span class="toast-ico toast-ico-success">✓</span><span class="toast-ico toast-ico-error">✕</span><span class="toast-ico toast-ico-warn">!</span><span class="toast-ico toast-ico-info">i</span><span id="toastMsg"></span></div>
+<div class="toast" id="toast"><span class="toast-ico toast-ico-success">✓</span><span class="toast-ico toast-ico-error">✕</span><span class="toast-ico toast-ico-warn">!</span><span class="toast-ico toast-ico-info">i</span><span id="toastMsg"></span><button class="toast-action" id="toastAction" onclick="runToastAction()"></button></div>
 
 <script>
 // ═══ CONFIGURATION ═══
@@ -2144,12 +2153,28 @@ window.addEventListener('load',function(){
   if(!localStorage.getItem('tutorial:seen')){setTimeout(openTutorial,500);}
 });
 
+// ═══ UI: HAPTICS ═══
+function buzz(ms){
+  if(navigator.vibrate)try{navigator.vibrate(ms||15);}catch(e){}
+}
+
 // ═══ UI: TOAST ═══
-function toast(msg,type){
+var _toastTimer=null,_toastActionFn=null;
+function toast(msg,type,action){
   type=type||'success';
   var t=g('toast');t.className='toast '+type;
-  g('toastMsg').textContent=msg;t.classList.add('show');
-  setTimeout(function(){t.classList.remove('show');},type==='error'?4000:2400);
+  g('toastMsg').textContent=msg;
+  _toastActionFn=action?action.fn:null;
+  if(action){g('toastAction').textContent=action.label;t.classList.add('has-action');}
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  var dur=action?5000:(type==='error'?4000:2400);
+  _toastTimer=setTimeout(function(){t.classList.remove('show');_toastActionFn=null;},dur);
+}
+function runToastAction(){
+  var fn=_toastActionFn;_toastActionFn=null;
+  g('toast').classList.remove('show');clearTimeout(_toastTimer);
+  if(fn)fn();
 }
 
 // ═══ UI: NAVIGATION ═══
@@ -3221,8 +3246,21 @@ function renderTxList(){
   }).join('');
 }
 function delTx(id){
-  var txs=DS.getTxs(cy,cm).filter(function(t){return t.id!==id;});
-  DS.saveTxs(cy,cm,txs);DS.drop();renderTx();renderDash();toast('Gasto eliminado');
+  var txs=DS.getTxs(cy,cm);
+  var idx=txs.findIndex(function(t){return t.id===id;});
+  if(idx<0)return;
+  var deleted=txs[idx];
+  var delY=cy,delM=cm; // por si el usuario cambia de mes antes de deshacer
+  txs.splice(idx,1);
+  DS.saveTxs(cy,cm,txs);DS.drop();renderTx();renderDash();
+  buzz();
+  toast('Gasto eliminado','warn',{label:'Deshacer',fn:function(){
+    var cur=DS.getTxs(delY,delM);
+    cur.splice(Math.min(idx,cur.length),0,deleted);
+    DS.saveTxs(delY,delM,cur);DS.drop();
+    renderTx();renderDash();
+    toast('Gasto restaurado','success');
+  }});
 }
 
 // ═══ EDIT TX ═══

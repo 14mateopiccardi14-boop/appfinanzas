@@ -16,6 +16,10 @@ Auditoría completa de la app. Se implementaron 7 mejoras (un commit c/u):
 
 Pendientes que quedaron de la auditoría (no pedidos aún): tenencia USD con cotización automática (DolarAPI), búsqueda multi-mes, compartir resumen como imagen.
 
+**Íconos rediseñados (aprobados por el usuario, commit `3caaa0d`):** medallón central del emblema (sol + $AR + laurel) sobre cuero a sangre completa — sin marco de placa ni adornos cortados por la máscara. Fuente del arte: `icon-source.png` (committeado); builder: `_build_icons.py` (local, gitignored, requiere Pillow). Cache-bust en `?v=3`. **Falta que el usuario regenere el APK en PWA Builder para que cambie el ícono del launcher.**
+
+También en esta sesión: pulido estético (bottom sheets, total en la dona, header compacto al scroll, transición direccional, acentos dorados, grano de fondo). Se intentó tipografía serif Fraunces y se revirtió (no gustó — ver memoria feedback-tipografia-app).
+
 ---
 
 ## Sesión anterior (2026-06-05)

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'finanzas-cache-v3';
+const CACHE_NAME = 'finanzas-cache-v4';
 const STATIC = ['./manifest.json', './icon.png', './icon-maskable-192.png', './icon-maskable-512.png'];
 
 self.addEventListener('install', event => {
@@ -26,10 +26,20 @@ self.addEventListener('fetch', event => {
         })
         .catch(() => caches.match(event.request))
     );
-  } else {
-    // Assets: caché primero
+  } else if (event.request.method === 'GET') {
+    // Assets (incluye Chart.js del CDN y fuentes de Google): caché primero,
+    // y lo que baja de la red se guarda para que funcione offline
     event.respondWith(
-      caches.match(event.request).then(res => res || fetch(event.request))
+      caches.match(event.request).then(res => {
+        if (res) return res;
+        return fetch(event.request).then(netRes => {
+          if (netRes && (netRes.ok || netRes.type === 'opaque')) {
+            const copy = netRes.clone();
+            caches.open(CACHE_NAME).then(c => c.put(event.request, copy));
+          }
+          return netRes;
+        });
+      })
     );
   }
 });

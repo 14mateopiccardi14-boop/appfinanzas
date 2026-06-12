@@ -284,6 +284,14 @@ body{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:colum
 .leg-i{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text2);}
 .leg-d{width:7px;height:7px;border-radius:2px;flex-shrink:0;}
 
+/* DONUT CENTER */
+.donut-center{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;pointer-events:none;
+}
+.donut-center-lbl{font-size:8.5px;color:var(--text2);text-transform:uppercase;letter-spacing:0.09em;font-weight:600;}
+.donut-center-val{font-family:var(--outfit);font-size:21px;font-weight:700;color:var(--text);letter-spacing:-0.6px;line-height:1;font-variant-numeric:tabular-nums;}
+
 /* CAT BARS */
 .cat-list{display:flex;flex-direction:column;gap:16px;}
 .cat-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;}
@@ -1277,7 +1285,7 @@ body.theme-paper .aurora-bg,body.light .aurora-bg{opacity:0.18;}
     <div class="meter-card" id="meterCard"></div>
     <div class="cc">
       <div class="cc-top" style="margin-bottom:14px;"><div class="cc-title">Gasto por categoría</div><div class="leg" id="donutLeg"></div></div>
-      <div style="position:relative;height:196px;"><canvas id="donutC" role="img" aria-label="Distribución de gastos por categoría">Gráfico de dona.</canvas></div>
+      <div style="position:relative;height:196px;"><canvas id="donutC" role="img" aria-label="Distribución de gastos por categoría">Gráfico de dona.</canvas><div class="donut-center" id="donutCenter"></div></div>
       <div class="empty" id="donutE" style="display:none;">Sin gastos registrados</div>
     </div>
     <div id="heatmap"></div>
@@ -2538,9 +2546,10 @@ function renderDash(){
   // DONUT
   var cats=Object.keys(byCat).filter(function(c){return byCat[c]>0;});
   if(donutI){donutI.destroy();donutI=null;}
-  if(cats.length===0){g('donutC').style.display='none';g('donutE').style.display='block';g('donutLeg').innerHTML='';}
+  if(cats.length===0){g('donutC').style.display='none';g('donutE').style.display='block';g('donutLeg').innerHTML='';g('donutCenter').innerHTML='';}
   else{
     g('donutC').style.display='block';g('donutE').style.display='none';
+    g('donutCenter').innerHTML='<div class="donut-center-lbl">Gastado</div><div class="donut-center-val">'+(hidden?'••••':fmtS(tot))+'</div>';
     g('donutLeg').innerHTML=cats.slice(0,4).map(function(c){return'<span class="leg-i"><span class="leg-d" style="background:'+(CAT_COLORS[c]||'#555')+'"></span>'+escHTML(c.split('/')[0].trim())+'</span>';}).join('');
     donutI=new Chart(g('donutC'),{type:'doughnut',data:{labels:cats,datasets:[{data:cats.map(function(c){return Math.round(byCat[c]);}),backgroundColor:cats.map(function(c){return CAT_COLORS[c]||'#555';}),borderWidth:0,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ctx.label+': '+fmt(ctx.raw,hidden);}}}},animation:{duration:700}}});
   }

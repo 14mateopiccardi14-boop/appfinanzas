@@ -2238,8 +2238,8 @@ function delExtraIncome(i){
   renderIncomePanel();renderDash();
   toast('Ingreso eliminado','warn');
 }
-function prevM(){cm--;if(cm<0){cm=11;cy--;}DS.drop();renderAll();}
-function nextM(){cm++;if(cm>11){cm=0;cy++;}DS.drop();renderAll();}
+function prevM(){cm--;if(cm<0){cm=11;cy--;}DS.drop();buzz(10);renderAll();}
+function nextM(){cm++;if(cm>11){cm=0;cy++;}DS.drop();buzz(10);renderAll();}
 function positionNavPill(panelId){
   var pill=g('navPill');var btn=g('nb-'+panelId);
   if(!pill||!btn)return;
@@ -2686,6 +2686,7 @@ function markPaid(txId){
   var t=txs.find(function(x){return x.id===txId;});
   if(t&&t.tercero){t.tercero.estado='saldado';t.tercero.fechaSaldo=new Date().toISOString().slice(0,10);}
   DS.saveTxs(cy,cm,txs);DS.drop();
+  buzz();
   renderTercerosScreen();renderDash();
   toast('💰 Saldado','success');
 }
@@ -2693,6 +2694,7 @@ function markAllPaid(nombre){
   var txs=DS.getTxs(cy,cm);
   txs.forEach(function(t){if(t.tercero&&t.tercero.estado==='pendiente'&&t.tercero.nombre===nombre){t.tercero.estado='saldado';t.tercero.fechaSaldo=new Date().toISOString().slice(0,10);}});
   DS.saveTxs(cy,cm,txs);DS.drop();
+  buzz();
   renderTercerosScreen();renderDash();
   toast('Todo saldado con '+nombre,'success');
 }
@@ -3311,6 +3313,7 @@ function saveEditTx(){
   }
   txs[idx]=updated;
   DS.saveTxs(cy,cm,txs);DS.drop();
+  buzz();
   closeEditTx();
   renderTx();renderDash();
   toast('Gasto actualizado','success');
@@ -3396,6 +3399,7 @@ function addTx(){
     if(names.indexOf(terceroNombre)===-1){names.unshift(terceroNombre);localStorage.setItem('terceros',JSON.stringify(names.slice(0,20)));}
   }
   DS.saveTxs(cy,cm,txs);DS.drop();
+  buzz();
   g('fDesc').value='';g('fMonto').value='';
   g('ibox').classList.remove('show');
   // Reset tercero toggle
@@ -3426,6 +3430,7 @@ function addCuota(){
   cs.push(data);
   DS.saveCuotas(cs);
   g('cNombre').value='';g('cMonto').value='';g('cTotal').value='';g('cPagadas').value='';g('cInicio').value='';
+  buzz();
   renderCuotas();renderDash();toast('Cuota agregada');
 }
 function toggleEditCuota(id){_editingCuotaId=(_editingCuotaId===id)?null:id;renderCuotas();}

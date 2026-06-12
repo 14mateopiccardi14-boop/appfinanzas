@@ -1972,9 +1972,10 @@ function txInPeriod(txDate,period,y,m){
   var parts=String(txDate||'').split('/');
   if(parts.length!==2)return false;
   var d=parseInt(parts[0],10),mo=parseInt(parts[1],10)-1;
-  // asumimos año = y para tx del mes actual; tx con mes anterior pertenecen a y o y-1
-  var yr=mo<=m?y:y;
   if(!period)return mo===m; // mes calendario si no hay período
+  // el período puede arrancar en el mes anterior; si ese mes anterior cruza el año
+  // (ej: cierre de enero incluye gastos de diciembre), la tx pertenece a y-1
+  var yr=mo>m?y-1:y;
   var dt=new Date(yr,mo,d);
   return dt>=period.start&&dt<=period.end;
 }

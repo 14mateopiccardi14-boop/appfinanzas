@@ -765,10 +765,21 @@ body.theme-paper .hm-cell.has-spend{color:#fff;}
 .bud-swatch{width:18px;height:18px;border-radius:50%;display:inline-block;cursor:pointer;border:2px solid var(--bg2);box-shadow:0 0 0 1px var(--border2);flex-shrink:0;transition:transform 0.1s;}
 .bud-swatch:active{transform:scale(0.85);}
 
-/* EDIT TX OVERLAY */
-.edit-overlay{position:fixed;inset:0;background:rgba(var(--bgRGB),0.92);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(12px);}
+/* EDIT TX OVERLAY — bottom sheet */
+.edit-overlay{position:fixed;inset:0;background:rgba(var(--bgRGB),0.78);z-index:9998;display:none;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(12px);}
 .edit-overlay.show{display:flex;animation:tutFadeIn 0.25s ease;}
-.edit-card{width:100%;max-width:380px;background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,0.6);}
+.edit-card{
+  width:100%;max-width:480px;background:var(--bg2);
+  border:1px solid var(--border2);border-bottom:none;
+  border-radius:24px 24px 0 0;padding:14px 22px calc(env(safe-area-inset-bottom,0) + 24px);
+  box-shadow:0 -20px 60px rgba(0,0,0,0.55);position:relative;
+}
+.edit-overlay.show .edit-card{animation:sheetUp 0.34s cubic-bezier(0.22,1,0.36,1);}
+.edit-card::before{
+  content:'';display:block;width:38px;height:4px;border-radius:3px;
+  background:var(--border3);margin:0 auto 16px;
+}
+@keyframes sheetUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
 .edit-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
 .edit-title{font-family:var(--outfit);font-size:16px;font-weight:600;color:var(--text);letter-spacing:-0.2px;}
 .ed-tercero-row{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--text);cursor:pointer;flex-wrap:wrap;}
@@ -791,10 +802,21 @@ body.theme-paper .hm-cell.has-spend{color:#fff;}
 .dd-total-lbl{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;}
 .dd-total-val{font-family:var(--outfit);font-size:20px;font-weight:700;color:var(--text);}
 
-/* COLOR PICKER OVERLAY */
-.col-overlay{position:fixed;inset:0;background:rgba(var(--bgRGB),0.92);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(12px);}
+/* COLOR PICKER OVERLAY — bottom sheet */
+.col-overlay{position:fixed;inset:0;background:rgba(var(--bgRGB),0.78);z-index:9998;display:none;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(12px);}
 .col-overlay.show{display:flex;animation:tutFadeIn 0.25s ease;}
-.col-card{width:100%;max-width:360px;background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,0.6);}
+.col-card{
+  width:100%;max-width:480px;background:var(--bg2);
+  border:1px solid var(--border2);border-bottom:none;
+  border-radius:24px 24px 0 0;padding:14px 22px calc(env(safe-area-inset-bottom,0) + 24px);
+  box-shadow:0 -20px 60px rgba(0,0,0,0.55);
+  max-height:85vh;overflow-y:auto;
+}
+.col-overlay.show .col-card{animation:sheetUp 0.34s cubic-bezier(0.22,1,0.36,1);}
+.col-card::before{
+  content:'';display:block;width:38px;height:4px;border-radius:3px;
+  background:var(--border3);margin:0 auto 16px;
+}
 .col-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
 .col-title{font-family:var(--outfit);font-size:15px;font-weight:600;color:var(--text);}
 .col-group{margin-bottom:14px;}
@@ -1644,7 +1666,7 @@ body.theme-paper .aurora-bg,body.light .aurora-bg{opacity:0.18;}
 </div>
 
 <!-- EDIT TX MODAL -->
-<div class="edit-overlay" id="editTxOverlay">
+<div class="edit-overlay" id="editTxOverlay" onclick="if(event.target===this)closeEditTx()">
   <div class="edit-card">
     <div class="edit-head">
       <div class="edit-title">Editar gasto</div>
@@ -1695,7 +1717,7 @@ body.theme-paper .aurora-bg,body.light .aurora-bg{opacity:0.18;}
 </div>
 
 <!-- COLOR PICKER MODAL -->
-<div class="col-overlay" id="colorPicker">
+<div class="col-overlay" id="colorPicker" onclick="if(event.target===this)closeColorPicker()">
   <div class="col-card">
     <div class="col-head">
       <div class="col-title">Color de <span id="colorTargetName">categoría</span></div>

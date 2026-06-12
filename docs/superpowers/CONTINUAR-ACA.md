@@ -1,6 +1,24 @@
 # Dónde quedamos — App Gastos
 
-**Última sesión:** 2026-06-05
+**Última sesión:** 2026-06-12
+
+## Sesión 2026-06-12 — Auditoría + bugs + pulido UX
+
+Auditoría completa de la app. Se implementaron 7 mejoras (un commit c/u):
+
+1. **fix txInPeriod**: el año se calculaba mal en cierres de tarjeta que cruzan dic→ene
+2. **SW offline**: ahora cachea Chart.js y fuentes del CDN (cache v4) — gráficos funcionan sin señal
+3. **Deshacer al borrar**: toast con botón "Deshacer" 5s (toast ahora soporta acciones: `toast(msg,type,{label,fn})`)
+4. **Hápticos**: `buzz(ms)` al registrar/editar/borrar/saldar/cambiar mes
+5. **Recordatorio de backup**: toast si pasaron 30+ días del último export (o nunca y hay 20+ gastos), máx 1/semana
+6. **Detalle del día**: tocar un día del heatmap abre sheet con los gastos de ese día (antes te tiraba a Gastos con búsqueda)
+7. **USD coherente**: nueva config "Cotización USD" en Ajustes (`cfg usdRate`, default 1200). Txs USD guardan `usd` (dólares) + `monto` (pesos). Migración one-time de txs viejas (`usdMigrated`). KPI USD muestra US$ reales. **El usuario tiene que poner la cotización real en Ajustes.**
+
+Pendientes que quedaron de la auditoría (no pedidos aún): tenencia USD con cotización automática (DolarAPI), búsqueda multi-mes, compartir resumen como imagen.
+
+---
+
+## Sesión anterior (2026-06-05)
 
 ## Estado actual
 

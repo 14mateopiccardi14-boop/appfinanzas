@@ -3654,7 +3654,32 @@ function exportBackup(){
   var url=URL.createObjectURL(blob);var a=document.createElement('a');
   a.href=url;a.download='finanzas_backup_'+new Date().toISOString().slice(0,10)+'.json';
   a.click();URL.revokeObjectURL(url);
+  setCfg('lastBackup',Date.now());
   toast('Backup descargado');
+}
+
+// ═══ BACKUP NUDGE ═══
+// Recuerda hacer backup: si pasaron 30+ días del último, o nunca hubo y ya hay 20+ gastos.
+// Como mucho una vez por semana, y nunca en la primera apertura (tutorial).
+function checkBackupNudge(){
+  if(!localStorage.getItem('tutorial:seen'))return;
+  var now=Date.now();
+  if(now-cfg('backupNudge',0)<7*24*60*60*1000)return;
+  var last=cfg('lastBackup',null);
+  var due=false;
+  if(last){due=now-last>30*24*60*60*1000;}
+  else{
+    var count=0;
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(k.slice(0,4)==='txs:')try{count+=(JSON.parse(localStorage.getItem(k))||[]).length;}catch(e){}
+    }
+    due=count>=20;
+  }
+  if(!due)return;
+  setCfg('backupNudge',now);
+  var msg=last?'Hace más de un mes que no hacés backup 💾':'Tenés varios gastos sin backup 💾';
+  toast(msg,'info',{label:'Hacer backup',fn:function(){showP('settings');}});
 }
 function importBackup(){
   var inp=document.createElement('input');inp.type='file';inp.accept='.json';
@@ -3821,6 +3846,8 @@ renderAddChips();
 renderAll();
 // Posicionar pill del nav inicialmente
 setTimeout(function(){positionNavPill('dash');},100);
+// Nudge de backup (con delay para no pisar el render inicial)
+setTimeout(checkBackupNudge,2500);
 // Light mode persistido
 // Aplicar tema persistido (migra de lightMode viejo si existía)
 (function(){

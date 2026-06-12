@@ -783,6 +783,14 @@ body.theme-paper .hm-cell.has-spend{color:#fff;}
 .tx-tarjeta-badge{background:rgba(var(--gRGB),0.12);color:var(--g5);}
 .tx-tercero-badge{background:rgba(120,80,180,0.16);color:#b884e0;}
 
+/* DAY DETAIL SHEET */
+.dd-item{display:flex;align-items:center;gap:11px;padding:11px 2px;border-bottom:1px solid var(--border);cursor:pointer;}
+.dd-item:last-child{border-bottom:none;}
+.dd-item:active{opacity:0.7;}
+.dd-foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+.dd-total-lbl{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;}
+.dd-total-val{font-family:var(--outfit);font-size:20px;font-weight:700;color:var(--text);}
+
 /* COLOR PICKER OVERLAY */
 .col-overlay{position:fixed;inset:0;background:rgba(var(--bgRGB),0.92);z-index:9998;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(12px);}
 .col-overlay.show{display:flex;animation:tutFadeIn 0.25s ease;}
@@ -1670,6 +1678,18 @@ body.theme-paper .aurora-bg,body.light .aurora-bg{opacity:0.18;}
       <button class="btn-sec" onclick="closeEditTx()" style="flex:1;">Cancelar</button>
       <button class="btn-pri" onclick="saveEditTx()" style="flex:2;">Guardar cambios</button>
     </div>
+  </div>
+</div>
+
+<!-- DAY DETAIL MODAL -->
+<div class="edit-overlay" id="dayDetailOverlay" onclick="if(event.target===this)closeDayDetail()">
+  <div class="edit-card">
+    <div class="edit-head">
+      <div class="edit-title" id="ddTitle">Día</div>
+      <button class="tut-skip" onclick="closeDayDetail()">Cerrar</button>
+    </div>
+    <div id="ddBody" style="max-height:50vh;overflow-y:auto;"></div>
+    <div class="dd-foot" id="ddFoot"></div>
   </div>
 </div>
 
@@ -2635,11 +2655,38 @@ function renderHeatmap(txs){
     (maxDayKey?'<div class="hm-foot">Día más caro: <b>'+maxDayKey+'/'+(cm+1)+'</b> ('+fmtS(byDay[maxDayKey])+')'+(avgDay?' · Promedio diario: '+fmtS(avgDay):'')+'</div>':'')+
   '</div>';
 }
-function navigateToDay(d){
-  // Por ahora abre la pestaña gastos con búsqueda por la fecha
-  txSearchQuery=d+'/'+(cm+1);
-  showP('tx');
+function navigateToDay(d){openDayDetail(d);}
+function txsOfDay(d){
+  return DS.getTxs(cy,cm).filter(function(t){
+    var p=String(t.date||'').split('/');
+    return p.length===2&&parseInt(p[0],10)===d&&parseInt(p[1],10)===cm+1;
+  });
 }
+function openDayDetail(d){
+  var txs=txsOfDay(d);
+  var dObj=new Date(cy,cm,d);
+  g('ddTitle').textContent=L.days[dObj.getDay()]+' '+d+' de '+L.months[cm];
+  var body=g('ddBody'),foot=g('ddFoot');
+  if(!txs.length){
+    body.innerHTML='<div class="empty" style="padding:24px 0;">Sin gastos este día</div>';
+    foot.innerHTML='';
+  }else{
+    body.innerHTML=txs.map(function(t){
+      var terBadge=t.tercero?'<span class="tx-tercero-badge">👤 '+escHTML(t.tercero.nombre)+'</span>':'';
+      var tarBadge=t.tarjeta&&!/efectivo/i.test(t.tarjeta)?'<span class="tx-tarjeta-badge">💳 '+escHTML(t.tarjeta)+'</span>':'';
+      return'<div class="dd-item" onclick="closeDayDetail();openEditTx(\''+escHTML(t.id)+'\')">'+
+        '<div class="tx-icon" style="background:'+(CAT_COLORS[t.cat]||'#333')+'22;">'+(CAT_EMOJI[t.cat]||'📦')+'</div>'+
+        '<div class="tx-info"><div class="tx-desc">'+escHTML(t.desc)+'</div><div class="tx-meta">'+escHTML(t.cat.split('/')[0].trim())+tarBadge+terBadge+'</div></div>'+
+        '<div class="tx-val">'+fmt(t.monto,hidden,t.currency)+'</div>'+
+      '</div>';
+    }).join('');
+    var total=txs.reduce(function(s,t){return s+t.monto;},0);
+    foot.innerHTML='<div><div class="dd-total-lbl">Total del día</div><div class="dd-total-val">'+(hidden?'••••':fmt(total))+'</div></div>'+
+      '<button class="btn-sec" style="flex:0 0 auto;padding:10px 14px;" onclick="closeDayDetail();txSearchQuery=\''+d+'/'+(cm+1)+'\';showP(\'tx\')">Ver en Gastos</button>';
+  }
+  g('dayDetailOverlay').classList.add('show');
+}
+function closeDayDetail(){g('dayDetailOverlay').classList.remove('show');}
 
 function showTerceros(){
   renderTercerosScreen();

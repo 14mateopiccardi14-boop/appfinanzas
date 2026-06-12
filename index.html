@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="icon-maskable-512.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:opsz,wght@9..144,300..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root{
@@ -24,8 +24,7 @@
   --gRGB:165,20,39; --gDarkRGB:122,14,30;
   --gL:rgba(var(--gDarkRGB),0.15); --gL2:rgba(var(--gDarkRGB),0.28);
   --amber:#c87a0a; --blue:#2e6fd4; --ok:#3d9e72; --danger:#d44e4e;
-  /* --outfit conserva el nombre pero ahora es Fraunces (serif editorial) — display de números y títulos */
-  --dm:'DM Sans',sans-serif; --outfit:'Fraunces',Georgia,serif;
+  --dm:'DM Sans',sans-serif; --outfit:'Outfit',sans-serif;
   --gold:#d8b56e; --goldRGB:216,181,110;
   --r:16px; --rL:22px;
 }
@@ -186,8 +185,8 @@ body{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:colum
   display:flex;flex-direction:column;align-items:center;gap:4px;
 }
 .hdr-month{
-  font-family:var(--outfit);font-size:22px;font-weight:650;color:var(--text);
-  letter-spacing:0.04em;line-height:1;text-transform:uppercase;
+  font-family:var(--outfit);font-size:22px;font-weight:800;color:var(--text);
+  letter-spacing:-0.5px;line-height:1;text-transform:uppercase;
   text-shadow:0 0 30px rgba(192,24,48,0.5),0 2px 10px rgba(0,0,0,0.5);
 }
 .hdr-year{
@@ -252,10 +251,7 @@ body{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:colum
 .eye-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.45);padding:4px;display:flex;align-items:center;transition:color 0.15s;}
 .eye-btn:active{color:rgba(255,255,255,0.9);}
 .eye-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;}
-.ic-val{font-family:var(--outfit);font-size:42px;font-weight:600;letter-spacing:-0.5px;line-height:1;position:relative;z-index:1;
-  background:linear-gradient(175deg,#fff 35%,#f0d9a4 85%);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 2px 8px rgba(0,0,0,0.25));}
+.ic-val{font-family:var(--outfit);font-size:42px;font-weight:700;color:#fff;letter-spacing:-1.6px;line-height:1;position:relative;z-index:1;text-shadow:0 2px 8px rgba(0,0,0,0.18);}
 .ic-sub{font-size:11px;color:rgba(255,255,255,0.4);margin-top:6px;position:relative;z-index:1;}
 
 /* KPI GRID */
@@ -267,7 +263,7 @@ body{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:colum
 }
 .kpi.alert{border-color:var(--gL2);}
 .kpi-lbl{font-size:9px;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;font-weight:600;margin-bottom:8px;}
-.kpi-val{font-family:var(--outfit);font-size:22px;font-weight:600;color:var(--text);line-height:1;letter-spacing:-0.2px;}
+.kpi-val{font-family:var(--outfit);font-size:22px;font-weight:700;color:var(--text);line-height:1;letter-spacing:-0.6px;}
 .kpi-top{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px;}
 .kpi-delta{
   font-family:var(--dm);font-size:9.5px;font-weight:600;
@@ -537,7 +533,7 @@ body{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:colum
 }
 .bb-lbl{font-size:10px;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
 .bb-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:4px;}
-.bb-amount{font-family:var(--outfit);font-size:38px;font-weight:650;letter-spacing:-0.5px;line-height:1;}
+.bb-amount{font-family:var(--outfit);font-size:38px;font-weight:800;letter-spacing:-1.5px;line-height:1;}
 .bb-sub{font-size:11px;color:var(--text2);}
 .bb-track{height:3px;background:rgba(255,255,255,0.06);border-radius:3px;margin-top:12px;}
 .bb-fill{height:3px;border-radius:3px;transition:width 0.9s cubic-bezier(0.34,1.56,0.64,1);}
@@ -772,7 +768,7 @@ body.theme-paper .hm-cell.has-spend{color:#fff;}
 /* INCOME PANEL */
 .inc-total-row{display:flex;justify-content:space-between;align-items:center;}
 .inc-total-lbl{font-size:10.5px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
-.inc-total-val{font-family:var(--outfit);font-weight:600;font-size:30px;color:var(--ok);letter-spacing:-0.3px;}
+.inc-total-val{font-family:var(--outfit);font-weight:700;font-size:30px;color:var(--ok);letter-spacing:-1px;}
 .inc-total-badge{background:rgba(61,158,114,0.14);border:1px solid rgba(61,158,114,0.3);color:var(--ok);font-size:10px;font-weight:600;padding:5px 9px;border-radius:9px;text-align:right;line-height:1.5;font-family:var(--dm);}
 .ex-item{display:flex;align-items:center;gap:10px;padding:11px;background:var(--bg3);border:1px solid var(--border);border-radius:11px;margin-bottom:8px;}
 .ex-body{flex:1;min-width:0;}

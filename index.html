@@ -1486,6 +1486,7 @@ body.theme-paper .aurora-bg,body.light .aurora-bg{opacity:0.18;}
         <div class="set-row"><div><div class="sr-lbl">Meta de ahorro</div><div class="sr-sub">% del ingreso</div></div><input type="number" class="sr-in" id="cfgGoal" placeholder="60" min="1" max="99"></div>
         <div class="set-row"><div><div class="sr-lbl">Cuotas fijas del mes</div><div class="sr-sub">Monto total comprometido</div></div><input type="number" class="sr-in" id="cfgCuotas" placeholder="0"></div>
         <div class="set-row"><div><div class="sr-lbl">Gasto previo al registro</div><div class="sr-sub" id="previoSub">Gastos del mes antes de usar la app</div></div><input type="number" class="sr-in" id="cfgPrevio" placeholder="0"></div>
+        <div class="set-row"><div><div class="sr-lbl">Cotización USD</div><div class="sr-sub">Pesos por dólar (para Ahorro USD)</div></div><input type="number" class="sr-in" id="cfgUsdRate" placeholder="1200" min="1"></div>
         <div class="set-row"><div><div class="sr-lbl">Moneda principal</div><div class="sr-sub">Para mostrar totales</div></div>
           <select class="sr-in" id="cfgCurrency" style="width:130px;text-align:left;font-family:var(--dm);font-size:13px;">
             <option value="ARS">$ ARS</option>
@@ -1917,6 +1918,7 @@ function userName(){return cfg('userName',APP_CONFIG.user.name);}
 function goal(){return cfg('goal',APP_CONFIG.defaults.savingsGoal);}
 function cuotasFijas(){return cfg('cuotas',0);}
 function defCurrency(){return cfg('currency',APP_CONFIG.defaults.currency);}
+function usdRate(){return cfg('usdRate',1200);}
 function buds(){return cfg('budgets',Object.fromEntries(APP_CONFIG.categories.map(function(c){return[c.name,c.budget];})));}
 function gastosPrevios(y,m){return cfg('previo:'+mkey(y,m),0);}
 
@@ -2016,7 +2018,7 @@ function totalsByCard(txs,cuotasMes,y,m){
     var txTotal=0,txCount=0;
     txs.forEach(function(t){
       if(t.tarjeta!==card.value)return;
-      if(t.currency&&t.currency==='USD')return; // USD no entra
+      if(t.cat==='Ahorro USD')return; // el ahorro no es gasto de tarjeta
       if(txInPeriod(t.date,period,y,m)){txTotal+=t.monto;txCount++;}
     });
     var cuTotal=0,cuCount=0;
@@ -2571,9 +2573,10 @@ function renderNewCards(txsAll,totalUSD,terceros){
 
   // 2. KPI USD ANCHO
   if(totalUSD>0){
-    // Asumir cotización para mostrar equivalente en USD (1 USD ≈ 1200 ARS para ficticio)
-    var usdEq=Math.round(totalUSD/1200);
-    g('usdKpi').innerHTML='<div class="usd-kpi" style="margin-top:10px;"><div class="usd-kpi-l"><div class="usd-kpi-ico">\u{1F4B5}</div><div class="usd-kpi-info"><div class="usd-kpi-lbl">Ahorro USD acumulado</div><div class="usd-kpi-val">'+(hidden?'••••':fmtS(totalUSD))+'</div></div></div><div class="usd-kpi-badge">US$ '+usdEq+'</div></div>';
+    // US$ reales: suma del campo usd; para txs viejas sin campo, estima con la cotización configurada
+    var usdEq=txsAll.filter(function(t){return t.cat==='Ahorro USD';})
+      .reduce(function(s,t){return s+(t.usd||Math.round(t.monto/usdRate()));},0);
+    g('usdKpi').innerHTML='<div class="usd-kpi" style="margin-top:10px;"><div class="usd-kpi-l"><div class="usd-kpi-ico">\u{1F4B5}</div><div class="usd-kpi-info"><div class="usd-kpi-lbl">Ahorro USD acumulado</div><div class="usd-kpi-val">'+(hidden?'••••':fmtS(totalUSD))+'</div></div></div><div class="usd-kpi-badge">'+(hidden?'••••':'US$ '+usdEq)+'</div></div>';
   }else{g('usdKpi').innerHTML='';}
 
   // 3. WIDGET POR TARJETA
@@ -2676,8 +2679,8 @@ function openDayDetail(d){
       var tarBadge=t.tarjeta&&!/efectivo/i.test(t.tarjeta)?'<span class="tx-tarjeta-badge">💳 '+escHTML(t.tarjeta)+'</span>':'';
       return'<div class="dd-item" onclick="closeDayDetail();openEditTx(\''+escHTML(t.id)+'\')">'+
         '<div class="tx-icon" style="background:'+(CAT_COLORS[t.cat]||'#333')+'22;">'+(CAT_EMOJI[t.cat]||'📦')+'</div>'+
-        '<div class="tx-info"><div class="tx-desc">'+escHTML(t.desc)+'</div><div class="tx-meta">'+escHTML(t.cat.split('/')[0].trim())+tarBadge+terBadge+'</div></div>'+
-        '<div class="tx-val">'+fmt(t.monto,hidden,t.currency)+'</div>'+
+        '<div class="tx-info"><div class="tx-desc">'+escHTML(t.desc)+(t.usd?' <span class="cur-badge">US$'+t.usd+'</span>':'')+'</div><div class="tx-meta">'+escHTML(t.cat.split('/')[0].trim())+tarBadge+terBadge+'</div></div>'+
+        '<div class="tx-val">'+fmt(t.monto,hidden,t.usd?'ARS':t.currency)+'</div>'+
       '</div>';
     }).join('');
     var total=txs.reduce(function(s,t){return s+t.monto;},0);
@@ -3214,10 +3217,9 @@ function renderUSDSection(){
     totalARS+=sum;
     txs.forEach(function(t){
       ops++;
-      if(t.currency==='USD'){totalUSD+=Math.round(t.monto/1200);}
+      totalUSD+=t.usd||Math.round(t.monto/usdRate());
     });
   }
-  totalUSD=Math.round(totalARS/1200);
   var maxVal=Math.max.apply(null,data.map(function(d){return d.val;}).concat([1]));
   var bars=data.map(function(d){
     var h=d.val>0?Math.max(4,Math.round(d.val/maxVal*70)):0;
@@ -3283,10 +3285,11 @@ function renderTxList(){
         items.map(function(t){
           var tarjetaBadge=t.tarjeta&&!/efectivo/i.test(t.tarjeta)?'<span class="tx-tarjeta-badge">\ud83d\udcb3 '+escHTML(t.tarjeta)+'</span>':'';
           var terceroBadge=t.tercero?'<span class="tx-tercero-badge">\ud83d\udc64 '+escHTML(t.tercero.nombre)+(t.tercero.estado==='saldado'?' \u00b7 saldado':'')+'</span>':'';
+          var curBadge=t.usd?' <span class="cur-badge">US$'+t.usd+'</span>':(t.currency&&t.currency!=='ARS'?' <span class="cur-badge">'+t.currency+'</span>':'');
           return '<div class="tx-item" onclick="openEditTx(\''+escHTML(t.id)+'\')">'+
             '<div class="tx-icon" style="background:'+(CAT_COLORS[t.cat]||'#333')+'22;">'+(CAT_EMOJI[t.cat]||'\u{1F4E6}')+'</div>'+
-            '<div class="tx-info"><div class="tx-desc">'+escHTML(t.desc)+(t.currency&&t.currency!=='ARS'?' <span class="cur-badge">'+t.currency+'</span>':'')+'</div><div class="tx-meta">'+escHTML(t.cat.split('/')[0].trim())+tarjetaBadge+terceroBadge+'</div></div>'+
-            '<div class="tx-right"><div class="tx-val">'+fmt(t.monto,hidden,t.currency)+'</div></div>'+
+            '<div class="tx-info"><div class="tx-desc">'+escHTML(t.desc)+curBadge+'</div><div class="tx-meta">'+escHTML(t.cat.split('/')[0].trim())+tarjetaBadge+terceroBadge+'</div></div>'+
+            '<div class="tx-right"><div class="tx-val">'+fmt(t.monto,hidden,t.usd?'ARS':t.currency)+'</div></div>'+
             '<button class="tx-del" onclick="event.stopPropagation();delTx(\''+escHTML(t.id)+'\')">\u00d7</button>'+
           '</div>';
         }).join('')+
@@ -3353,6 +3356,8 @@ function saveEditTx(){
   if(esTercero&&!terceroNombre){toast('Indicá quién es el tercero','warn');return;}
   var existing=txs[idx];
   var updated={id:existing.id,desc:desc,monto:monto,cat:cat,date:date||todayStr(),currency:existing.currency||'ARS'};
+  // Txs USD: el monto editado es ARS; recalcular los US$ si cambió
+  if(existing.usd){updated.usd=monto!==existing.monto?Math.round(monto/usdRate()):existing.usd;}
   if(tarjeta)updated.tarjeta=tarjeta;
   if(esTercero){
     updated.tercero={nombre:terceroNombre,estado:(existing.tercero&&existing.tercero.estado)||'pendiente'};
@@ -3382,12 +3387,16 @@ function parseGastos(text){
   var norm=text.replace(/(\d+)\s*mil\b/gi,function(_,n){return String(parseInt(n)*1000);}).replace(/(\d+)\s*k\b/gi,function(_,n){return String(parseInt(n)*1000);}).replace(/\$\s*/g,'');
   var parts=norm.split(/[,;]|\sy\s|\s&\s/i).filter(function(s){return s.trim().length>1;});
   parts.forEach(function(seg){
-    var nm=seg.match(/(\d{3,})/);if(!nm)return;
-    var monto=parseFloat(nm[1]);if(monto<100||monto>50000000)return;
+    var cat=detectCat(seg);
+    var isUSD=cat==='Ahorro USD';
+    // USD: acepta montos chicos ("dolar 50" = US$50); ARS exige 3+ d\u00edgitos
+    var nm=seg.match(isUSD?/(\d{2,})/:/(\d{3,})/);if(!nm)return;
+    var monto=parseFloat(nm[1]);
+    if(isUSD){if(monto<10||monto>1000000)return;}
+    else if(monto<100||monto>50000000)return;
     var desc=seg.replace(/\d[\d.]*/g,'').replace(/\$|gast\u00e9|gaste|pagu\u00e9|pague|compr\u00e9|compre|fui a|sal\u00ed|me cobr\u00f3/gi,'').trim().replace(/\s+/g,' ').trim();
     desc=desc.charAt(0).toUpperCase()+desc.slice(1)||'Gasto';
-    var cat=detectCat(seg);
-    var currency=cat==='Ahorro USD'?'USD':'ARS';
+    var currency=isUSD?'USD':'ARS';
     results.push({monto:monto,cat:cat,desc:desc,currency:currency});
   });
   return results;
@@ -3400,7 +3409,12 @@ function doInterpret(){
   var gastos=parseGastos(text);var ib=g('ibox');
   if(!gastos.length){ib.innerHTML='<span style="color:var(--amber);font-size:13px;">No detect\u00e9 montos. Intent\u00e1: "nafta 15000, comida 8500"</span>';ib.classList.add('show');return;}
   pendingTxs=gastos;
-  ib.innerHTML='<div class="ib-hdr">Detect\u00e9 estos gastos:</div>'+gastos.map(function(gs){return '<div class="ib-row"><div class="ib-cat"><div class="ib-dot" style="background:'+(CAT_COLORS[gs.cat]||'#555')+'"></div><span>'+escHTML(gs.desc)+'</span><span style="font-size:10px;color:var(--text3);margin-left:4px;">'+escHTML(gs.cat)+'</span></div><div class="ib-val">'+fmt(gs.monto,false,gs.currency)+'</div></div>';}).join('')+'<div style="margin-top:10px;font-size:12px;color:var(--text2);">Toc\u00e1 Registrar para confirmar.</div>';
+  ib.innerHTML='<div class="ib-hdr">Detect\u00e9 estos gastos:</div>'+gastos.map(function(gs){
+    var val=gs.currency==='USD'
+      ?'US$'+gs.monto+' <span style="font-size:11px;color:var(--text2);font-weight:500;">\u2248 '+fmt(gs.monto*usdRate(),false)+'</span>'
+      :fmt(gs.monto,false,gs.currency);
+    return '<div class="ib-row"><div class="ib-cat"><div class="ib-dot" style="background:'+(CAT_COLORS[gs.cat]||'#555')+'"></div><span>'+escHTML(gs.desc)+'</span><span style="font-size:10px;color:var(--text3);margin-left:4px;">'+escHTML(gs.cat)+'</span></div><div class="ib-val">'+val+'</div></div>';
+  }).join('')+'<div style="margin-top:10px;font-size:12px;color:var(--text2);">Toc\u00e1 Registrar para confirmar.</div>';
   ib.classList.add('show');
 }
 function toggleManual(){
@@ -3420,11 +3434,17 @@ function addTx(){
   if(tarjeta)extra.tarjeta=tarjeta;
   if(esTercero&&terceroNombre)extra.tercero={nombre:terceroNombre,estado:'pendiente'};
 
+  // Si la moneda es USD, el monto tipeado son d\u00f3lares: guardamos usd y convertimos a ARS
+  function buildTx(desc,montoTyped,cat,currency){
+    var t=Object.assign({id:Utils.genId(),desc:desc,monto:montoTyped,cat:cat,date:ds,currency:currency||'ARS'},extra);
+    if(currency==='USD'){t.usd=montoTyped;t.monto=Math.round(montoTyped*usdRate());}
+    return t;
+  }
   if(manualMode){
     var desc=g('fDesc').value.trim();var monto=parseFloat(g('fMonto').value);
     var cat=g('fCat').value;var currency=(g('fCurrency')||{}).value||'ARS';
     if(!monto||monto<=0){toast('Ingres\u00e1 un monto','warn');return;}
-    var txData=Object.assign({id:Utils.genId(),desc:desc||cat,monto:monto,cat:cat,date:ds,currency:currency},extra);
+    var txData=buildTx(desc||cat,monto,cat,currency);
     var v=Validators.tx(txData);
     if(!v.valid){toast(v.errors[0],'error');return;}
     txs.push(txData);
@@ -3432,7 +3452,7 @@ function addTx(){
   } else {
     if(!pendingTxs.length){doInterpret();return;}
     pendingTxs.forEach(function(gs){
-      var txData=Object.assign({id:Utils.genId(),desc:gs.desc||gs.cat,monto:gs.monto,cat:gs.cat,date:ds,currency:gs.currency||'ARS'},extra);
+      var txData=buildTx(gs.desc||gs.cat,gs.monto,gs.cat,gs.currency);
       var v=Validators.tx(txData);
       if(v.valid)txs.push(txData);
     });
@@ -3626,6 +3646,7 @@ function renderSettings(){
   var un=g('cfgUserName');if(un)un.value=userName();
   g('cfgInc').value=cfg('income', APP_CONFIG.defaults.income);g('cfgGoal').value=goal();g('cfgCuotas').value=cuotasFijas();
   g('cfgPrevio').value=gastosPrevios(cy,cm)||'';
+  var ur=g('cfgUsdRate');if(ur)ur.value=usdRate();
   var cc=g('cfgCurrency');if(cc)cc.value=defCurrency();
   g('previoSub').textContent='Gastos de '+L.months[cm]+' antes de usar la app';
   renderCustomCats();
@@ -3648,6 +3669,7 @@ function saveSettings(){
   setCfg('income',data.income);setCfg('goal',data.goal);
   setCfg('cuotas',parseInt(g('cfgCuotas').value)||0);
   setCfg('previo:'+mkey(cy,cm),parseInt(g('cfgPrevio').value)||0);
+  var ur=g('cfgUsdRate');if(ur){var rv=parseInt(ur.value,10);if(rv>0)setCfg('usdRate',rv);}
   var cc=g('cfgCurrency');if(cc)setCfg('currency',cc.value||'ARS');
   var bud=buds();var nb={};
   Object.keys(bud).forEach(function(cat){var el=g('bud_'+cat.replace(/\W/g,'_'));if(el)nb[cat]=parseInt(el.value)||bud[cat];else nb[cat]=bud[cat];});
@@ -3884,7 +3906,33 @@ g('fDesc').addEventListener('keydown',function(e){
 
 
 
+// ═══ MIGRACIÓN USD (one-time) ═══
+// Antes, una tx USD guardaba los dólares tipeados en `monto` y se restaban como pesos.
+// Ahora `usd` = dólares y `monto` = pesos. Convierte lo viejo con la cotización configurada.
+function migrateUSDTxs(){
+  if(cfg('usdMigrated',false))return;
+  var migrated=0;
+  Object.keys(localStorage).forEach(function(k){
+    if(k.indexOf('txs:')!==0)return;
+    try{
+      var txs=JSON.parse(localStorage.getItem(k))||[];var changed=false;
+      txs.forEach(function(t){
+        if(t.currency==='USD'&&!t.usd){t.usd=t.monto;t.monto=Math.round(t.usd*usdRate());changed=true;migrated++;}
+      });
+      if(changed)localStorage.setItem(k,JSON.stringify(txs));
+    }catch(e){}
+  });
+  setCfg('usdMigrated',true);
+  if(migrated){
+    DS.drop();
+    setTimeout(function(){
+      toast(migrated+' compra'+(migrated===1?'':'s')+' USD convertida'+(migrated===1?'':'s')+' a pesos — revisá la cotización','info',{label:'Ajustes',fn:function(){showP('settings');}});
+    },1200);
+  }
+}
+
 // ═══ INIT ═══
+migrateUSDTxs();
 applyCats();
 populateCatSelects();
 applyRecurrings();

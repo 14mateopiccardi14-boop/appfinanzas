@@ -2,6 +2,14 @@
 
 **Última sesión:** 2026-06-12
 
+## ✅ Al volver (pendientes del usuario, no de código)
+
+1. **Regenerar el APK en PWA Builder** para que cambie el ícono del launcher: pwabuilder.com → URL de Pages → Android → misma signing key → instalar.
+2. **Poner la cotización USD real** en Ajustes → Finanzas → "Cotización USD" (quedó en 1200 default; al abrir, la app migra las compras USD viejas con ese valor).
+3. Probar en el celu: bottom sheets, header compacto al scroll, detalle del día en heatmap, deshacer al borrar, acentos dorados.
+
+**Features candidatas si quiere seguir:** tenencia USD con cotización automática (DolarAPI), búsqueda multi-mes, compartir resumen como imagen.
+
 ## Sesión 2026-06-12 — Auditoría + bugs + pulido UX
 
 Auditoría completa de la app. Se implementaron 7 mejoras (un commit c/u):

@@ -95,6 +95,9 @@ body{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:colum
 .panel.active{display:block;animation:panelIn 0.22s cubic-bezier(0.22,1,0.36,1);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 @keyframes panelIn{from{opacity:0;transform:translateX(18px);}to{opacity:1;transform:translateX(0);}}
+/* venir desde una pestaña posterior → entra desde la izquierda */
+.panel.active.from-left{animation:panelInL 0.22s cubic-bezier(0.22,1,0.36,1);}
+@keyframes panelInL{from{opacity:0;transform:translateX(-18px);}to{opacity:1;transform:translateX(0);}}
 @keyframes staggerIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
 
 /* Stagger entrance — dashboard solo, primera carga */
@@ -2242,9 +2245,15 @@ function runToastAction(){
 }
 
 // ═══ UI: NAVIGATION ═══
+var NAV_ORDER=['dash','tx','add','cuotas','income','settings']; // orden visual del nav
+var _curPanel='dash';
 function showP(p){
+  var fromLeft=NAV_ORDER.indexOf(p)<NAV_ORDER.indexOf(_curPanel);
+  _curPanel=p;
   ['dash','add','tx','cuotas','income','settings'].forEach(function(id){
-    g('panel-'+id).classList.toggle('active',id===p);
+    var el=g('panel-'+id);
+    el.classList.toggle('active',id===p);
+    el.classList.toggle('from-left',id===p&&fromLeft);
     var nb=g('nb-'+id);if(nb)nb.classList.toggle('active',id===p);
   });
   positionNavPill(p);
